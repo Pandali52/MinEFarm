@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinEFarm AI - Minecraft Farm Guide, Online Canvas & Skin Editor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mcDark: '#121212',
+                        mcCard: '#1e1e1e',
+                        mcBorder: '#333333',
+                        mcGreen: '#2e7d32',
+                        mcGreenHover: '#1b5e20',
+                        mcGold: '#f59e0b',
+                        mcRedstone: '#ef4444',
+                        mcDiamond: '#06b6d4',
+                    },
+                    fontFamily: {
+                        mono: ['Courier New', 'monospace', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Phosphor Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #e5e7eb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+        .pixel-art {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #18181b;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 3px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #52525b;
+        }
+        /* Grass block header pattern */
+        .grass-header {
+            background: linear-gradient(180deg, #4ade80 0%, #16a34a 20%, #78350f 21%, #451a03 100%);
+        }
+        .mc-btn {
+            box-shadow: inset -2px -4px 0px 0px rgba(0,0,0,0.4), inset 2px 2px 0px 0px rgba(255,255,255,0.2);
+            transition: all 0.05s ease;
+        }
+        .mc-btn:active {
+            box-shadow: inset 2px 2px 0px 0px rgba(0,0,0,0.4);
+            transform: translateY(2px);
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-zinc-950 text-zinc-100">
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 z-20 shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded bg-green-600 border-2 border-green-400 flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-green-900/30">
+                ⛏️
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-wide flex items-center gap-2">
+                    MinEFarm <span class="bg-emerald-600 text-xs px-2 py-0.5 rounded text-white uppercase font-semibold">AI v3.0</span>
+                </h1>
+                <p class="text-xs text-zinc-400 hidden sm:block">Minecraft Farm Rehberi & Canlı Topluluk Tuvali</p>
+            </div>
+        </div>
+
+        <!-- User Profile & Online Indicator -->
+        <div class="flex items-center gap-3">
+            <div id="connectionStatus" class="flex items-center gap-1.5 text-xs bg-zinc-800 px-3 py-1.5 rounded-full border border-zinc-700">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-zinc-300 font-medium" id="statusText font-mono">Çevrimiçi (Firebase)</span>
+            </div>
+
+            <!-- Profile Info Box -->
+            <div class="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-lg p-1 pr-3">
+                <div class="w-8 h-8 rounded bg-zinc-800 border border-zinc-600 flex items-center justify-center text-sm font-bold text-emerald-400" id="userAvatar">
+                    👤
+                </div>
+                <div class="flex flex-col">
+                    <input type="text" id="usernameInput" value="Oyuncu1" class="bg-transparent text-xs font-bold text-zinc-200 outline-none w-28 hover:bg-zinc-800 rounded px-1 focus:bg-zinc-800 border border-transparent focus:border-emerald-500 transition" title="Kullanıcı Adınızı Değiştirin">
+                    <span id="roleBadge" class="text-[10px] text-zinc-400 font-semibold px-1">Üye</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <nav class="w-16 md:w-56 bg-zinc-900/90 border-r border-zinc-800 flex flex-col justify-between shrink-0">
+            <div class="p-2 space-y-1">
+                <button onclick="switchTab('farms')" id="tab-farms" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-emerald-400 bg-zinc-800/80 font-medium text-sm transition">
+                    <i class="fa-solid font-bold text-lg fa-wheat-awn"></i>
+                    <span class="hidden md:inline">Farm Rehberleri</span>
+                </button>
+
+                <button onclick="switchTab('canvas')" id="tab-canvas" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 font-medium text-sm transition">
+                    <i class="fa-solid text-lg fa-palette"></i>
+                    <span class="hidden md:inline">Canlı 152x152 Tuval</span>
+                </button>
+
+                <button onclick="switchTab('skin')" id="tab-skin" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 font-medium text-sm transition">
+                    <i class="fa-solid text-lg fa-shirt"></i>
+                    <span class="hidden md:inline">Skin Editörü (64x64)</span>
+                </button>
+
+                <button onclick="switchTab('community')" id="tab-community" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 font-medium text-sm transition">
+                    <i class="fa-solid text-lg fa-code"></i>
+                    <span class="hidden md:inline">Kod & Redstone Paylaşımı</span>
+                </button>
+
+                <button onclick="switchTab('ai')" id="tab-ai" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 font-medium text-sm transition">
+                    <i class="fa-solid text-lg fa-robot text-purple-400"></i>
+                    <span class="hidden md:inline">MinEFarm AI Danışman</span>
+                </button>
+            </div>
+
+            <!-- Admin Status Indicator Footer -->
+            <div id="adminPanelStatus" class="p-3 border-t border-zinc-800 bg-zinc-950/50 text-xs hidden md:block">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-amber-500"></i>
+                    <div>
+                        <p class="font-bold text-zinc-300" id="adminNoticeTitle">Normal Kullanıcı</p>
+                        <p class="text-[10px] text-zinc-500">Yönetici yetkisi için: <br><code class="text-amber-400">MinEFarm Mr.A</code></p>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Workspace Area -->
+        <main class="flex-1 overflow-y-auto custom-scroll bg-zinc-950 p-4 md:p-6 relative">
+
+            <!-- TAB 1: FARM GUIDES & CATALOG -->
+            <section id="sec-farms" class="space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                            🌾 Minecraft Farm Kataloğu
+                        </h2>
+                        <p class="text-sm text-zinc-400">Otomatik farm tasarımları, malzeme listeleri ve detaylı rehberler.</p>
+                    </div>
+
+                    <!-- Admin Only "New Farm" Trigger -->
+                    <button id="addFarmAdminBtn" onclick="openAddFarmModal()" class="hidden mc-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow-lg transition">
+                        <i class="fa-solid fa-plus"></i> Yeni Farm Ekle (Admin)
+                    </button>
+                </div>
+
+                <!-- Farm Cards Grid -->
+                <div id="farmsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Dynamic or default items will be inserted here via JS -->
+                </div>
+            </section>
+
+            <!-- TAB 2: LIVE 152x152 PIXEL CANVAS (Holding Brush Support) -->
+            <section id="sec-canvas" class="hidden space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-4 bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            🎨 Canlı Çevrimiçi Tuval (152x152 Pixel)
+                        </h2>
+                        <p class="text-xs text-zinc-400">Fareyi / Dokunmayı basılı tutarak aralıksız çizebilirsiniz. Değişiklikler Firebase ile herkese anında yansır.</p>
+                    </div>
+
+                    <!-- Canvas Tools Bar -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="flex items-center gap-1 bg-zinc-800 p-1 rounded-lg border border-zinc-700">
+                            <label class="text-xs text-zinc-400 px-2 font-medium">Renk:</label>
+                            <input type="color" id="canvasColor" value="#22c55e" class="w-8 h-8 rounded bg-transparent cursor-pointer border-0">
+                        </div>
+
+                        <div class="flex items-center gap-1 bg-zinc-800 p-1 rounded-lg border border-zinc-700">
+                            <label class="text-xs text-zinc-400 px-2 font-medium">Boyut:</label>
+                            <select id="brushSize" class="bg-zinc-900 text-xs rounded px-2 py-1 text-zinc-200 outline-none">
+                                <option value="1">1x1 Pixel</option>
+                                <option value="2" selected>2x2 Pixel</option>
+                                <option value="4">4x4 Pixel</option>
+                                <option value="8">8x8 Pixel</option>
+                            </select>
+                        </div>
+
+                        <button id="toolPencil" onclick="setCanvasTool('pencil')" class="mc-btn bg-emerald-600 text-white p-2 rounded-lg text-sm px-3 font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-pencil"></i> Kalem
+                        </button>
+                        <button id="toolEraser" onclick="setCanvasTool('eraser')" class="mc-btn bg-zinc-700 hover:bg-zinc-600 text-zinc-200 p-2 rounded-lg text-sm px-3 flex items-center gap-1">
+                            <i class="fa-solid fa-eraser"></i> Silgi
+                        </button>
+                        <button onclick="clearCanvasOnline()" class="mc-btn bg-rose-700 hover:bg-rose-600 text-white p-2 rounded-lg text-sm px-3 flex items-center gap-1">
+                            <i class="fa-solid fa-trash"></i> Temizle
+                        </button>
+                        <button onclick="saveCanvasSnapshot()" class="mc-btn bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-lg text-sm px-3 flex items-center gap-1">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Kaydet/Paylaş
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas Display Container -->
+                <div class="flex flex-col lg:flex-row gap-6 items-start">
+                    <div class="relative bg-zinc-900 p-3 rounded-xl border border-zinc-800 shadow-2xl overflow-auto max-w-full">
+                        <canvas id="mainCanvas" width="152" height="152" class="pixel-art bg-black border border-zinc-700 rounded cursor-crosshair touch-none w-[300px] h-[300px] sm:w-[450px] sm:h-[450px] md:w-[500px] md:h-[500px]"></canvas>
+                        <div class="text-[10px] text-zinc-500 mt-2 flex justify-between">
+                            <span>Çözünürlük: 152 x 152 px</span>
+                            <span id="cursorPos">X: 0, Y: 0</span>
+                        </div>
+                    </div>
+
+                    <!-- Online Saved Artworks Stream -->
+                    <div class="flex-1 bg-zinc-900 p-4 rounded-xl border border-zinc-800 w-full space-y-3">
+                        <h3 class="text-md font-bold text-zinc-200 border-b border-zinc-800 pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-images text-emerald-400"></i> Topluluk Tarafından Kaydedilen Çizimler
+                        </h3>
+                        <div id="savedArtsList" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[480px] overflow-y-auto custom-scroll pr-1">
+                            <!-- Dynamically loaded from Firebase -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: MINECRAFT SKIN EDITOR -->
+            <section id="sec-skin" class="hidden space-y-4">
+                <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            👕 Minecraft Skin Editörü (64x64)
+                        </h2>
+                        <p class="text-xs text-zinc-400">Kendi skinini tasarla, noise ve fırça modları kullan, PNG indir!</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="color" id="skinColor" value="#e0ac69" class="w-8 h-8 rounded bg-transparent cursor-pointer">
+                        <button onclick="downloadSkin()" class="mc-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-download"></i> Skin İndir (.PNG)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 flex flex-col items-center">
+                        <p class="text-xs text-zinc-400 mb-2">2D Doku Alanı (64x64)</p>
+                        <canvas id="skinCanvas" width="64" height="64" class="pixel-art bg-zinc-950 border border-zinc-700 w-[256px] h-[256px] cursor-pointer rounded touch-none"></canvas>
+                    </div>
+                    <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 flex flex-col items-center justify-center space-y-4">
+                        <div id="skinPreview3D" class="w-48 h-48 bg-zinc-950 border border-zinc-800 rounded flex items-center justify-center text-zinc-500 text-xs text-center p-4">
+                            3D Önizleme Modeli Aktivite Simülasyonu
+                        </div>
+                        <p class="text-xs text-zinc-400 text-center">Tasarımınız hazır olduğunda Steve/Alex uyumlu PNG dosyanızı hemen indirebilirsiniz.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: REDSTONE & COMMAND CODES -->
+            <section id="sec-community" class="hidden space-y-6">
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            ⚡ Redstone & Komut Kod Deposu
+                        </h2>
+                        <p class="text-xs text-zinc-400">Minecraft topluluğunun paylaştığı özel devreler ve komut blokları.</p>
+                    </div>
+                    <button onclick="openCodeModal()" class="mc-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm">
+                        + Kod / Devre Paylaş
+                    </button>
+                </div>
+
+                <!-- Code Submissions List -->
+                <div id="codesContainer" class="space-y-4">
+                    <!-- Dynamically Loaded -->
+                </div>
+            </section>
+
+            <!-- TAB 5: MIN EFARM AI CHATBOT -->
+            <section id="sec-ai" class="hidden flex flex-col h-[calc(100vh-120px)] bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
+                <div class="p-4 bg-zinc-800/80 border-b border-zinc-700 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                            🤖
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-zinc-100 text-sm">MinEFarm AI Danışman</h3>
+                            <p class="text-[11px] text-purple-400">Seed önerileri, farm sorun giderme & komut yazıcı</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Stream -->
+                <div id="chatStream" class="flex-1 p-4 overflow-y-auto custom-scroll space-y-3">
+                    <div class="bg-zinc-800/60 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-300 max-w-xl">
+                        Merhaba! Ben <b>MinEFarm AI</b>. Minecraft farmları, seed tavsiyeleri, Redstone mantelığı veya özel komutlar hakkında bana soru sorabilirsin!
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="p-3 bg-zinc-950 border-t border-zinc-800 flex gap-2">
+                    <input type="text" id="aiInput" placeholder="Örn: 1.20 Demiryolu ve Altın farmı için hangi malzemeler lazım?" class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-100 outline-none focus:border-purple-500">
+                    <button onclick="sendAIMessage()" class="mc-btn bg-purple-600 hover:bg-purple-500 text-white font-bold px-5 py-2 rounded-lg text-sm">
+                        Gönder
+                    </button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL 1: ADD NEW FARM (ADMIN ONLY) -->
+    <div id="addFarmModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-lg p-6 space-y-4 relative shadow-2xl">
+            <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved"></i> Yeni Farm Ekle (Admin Yetkisi)
+            </h3>
+            <p class="text-xs text-zinc-400">Ekleyeceğiniz bu farm Firebase sunucusunda saklanacak ve tüm oyunculara görünecektir.</p>
+            
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-zinc-300 font-semibold mb-1">Farm Adı:</label>
+                    <input type="text" id="mfTitle" placeholder="Örn: Otomatik Çimento Farmı" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-zinc-100 outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-zinc-300 font-semibold mb-1">Kategori / Sürüm:</label>
+                    <input type="text" id="mfCategory" placeholder="Örn: Redstone / 1.20+" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-zinc-100 outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-zinc-300 font-semibold mb-1">Açıklama & Çalışma Mantığı:</label>
+                    <textarea id="mfDesc" rows="3" placeholder="Farmın detaylı anlatımı..." class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-zinc-100 outline-none focus:border-amber-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-zinc-300 font-semibold mb-1">Gerekli Malzemeler (Virgülle ayırın):</label>
+                    <input type="text" id="mfMaterials" placeholder="Örn: 2x Gözlemci, 4x Piston, 1x Su Kovası" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-zinc-100 outline-none focus:border-amber-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAddFarmModal()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-semibold">İptal</button>
+                <button onclick="saveNewFarmAdmin()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold">Farmı Yayınla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CODE SUBMISSION -->
+    <div id="addCodeModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-lg p-6 space-y-4 relative shadow-2xl">
+            <h3 class="text-lg font-bold text-emerald-400">
+                ⚡ Yeni Redstone veya Komut Bloğu Kodu
+            </h3>
+            
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-zinc-300 font-semibold mb-1">Başlık:</label>
+                    <input type="text" id="codeTitle" placeholder="Örn: Işınlanma Komut Bloğu Sistemi" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-zinc-100 outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-zinc-300 font-semibold mb-1">Kod / Komut İçeriği:</label>
+                    <textarea id="codeBody" rows="4" placeholder="/execute at @a run summon lightning_bolt..." class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-zinc-100 font-mono text-xs text-emerald-300 outline-none focus:border-emerald-500"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeCodeModal()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-semibold">İptal</button>
+                <button onclick="submitCodeOnline()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">Paylaş</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE & APPLICATION LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            setDoc, 
+            addDoc, 
+            onSnapshot, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase Configuration Setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'minefarm-ai-v3';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                // Fallback demo config structure if environment variables are omitted
+                apiKey: "demo-api-key",
+                authDomain: "demo.firebaseapp.com",
+                projectId: "demo-project",
+                storageBucket: "demo.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:demo"
+            };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // App Collections Paths (Rule 1 Compliance)
+        const publicFarmsCol = collection(db, 'artifacts', appId, 'public', 'data', 'farms');
+        const publicArtsCol = collection(db, 'artifacts', appId, 'public', 'data', 'artworks');
+        const publicCodesCol = collection(db, 'artifacts', appId, 'public', 'data', 'codes');
+        const liveCanvasDoc = doc(db, 'artifacts', appId, 'public', 'data', 'canvas_state', 'current');
+
+        let currentUser = null;
+        let isAdmin = false;
+
+        // Initialize Firebase Authentication
+        signInAnonymously(auth).catch(err => console.warn("Firebase Auth fallback/anon notice:", err));
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                initAppRealtimeListeners();
+            }
+        });
+
+        // Default Initial Farms Catalog
+        const defaultFarms = [
+            {
+                id: "demirmaden",
+                title: "Tam Otomatik Demir Farmı",
+                category: "1.20+ / Köylü Mekaniği",
+                desc: "Köylülerin zombiden korkması ile ürettikleri Demir Golemleri lav tuzağında keserek saatte ~400 demir külçesi elde eder.",
+                materials: "3x Köylü, 1x Zombi, 3x Yatak, 1x Lav Kovası, Su, Huni, Sandık"
+            },
+            {
+                id: "altin farm",
+                title: "Nether Zombileşmiş Piglin Farmı",
+                category: "1.20+ / Tecrübe & Altın",
+                desc: "Nether tavanında devasa portal halkaları veya görüş alanı kışkırtma mekanizmasıyla afk tecrübe ve altın parçası toplar.",
+                materials: "Obsidyen, Tuzak Kapıları, Magma Blokları, Huni Sistemleri"
+            },
+            {
+                id: "kaktus farm",
+                title: "Sıfır Redstone Kaktüs Farmı",
+                category: "Başlangıç / Kolay",
+                desc: "Kaktüslerin yanına blok yerleştirildiğinde kırılma fiziğinden yararlanan tam otomatik basit farm.",
+                materials: "Kaktüs, Kum, Çit, Akıntı için Su, Huni"
+            }
+        ];
+
+        // --- REALTIME SYNCHRONIZATION LISTENERS ---
+        function initAppRealtimeListeners() {
+            // 1. Listen for Dynamic Farms Catalog
+            onSnapshot(publicFarmsCol, (snapshot) => {
+                let farms = [...defaultFarms];
+                snapshot.forEach(docSnap => {
+                    farms.unshift({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderFarmsList(farms);
+            }, (error) => console.log("Farms sync error:", error));
+
+            // 2. Listen for Saved Artworks
+            onSnapshot(publicArtsCol, (snapshot) => {
+                const artsList = [];
+                snapshot.forEach(docSnap => artsList.push(docSnap.data()));
+                renderSavedArtworks(artsList);
+            }, (error) => console.log("Arts sync error:", error));
+
+            // 3. Listen for Community Codes
+            onSnapshot(publicCodesCol, (snapshot) => {
+                const codesList = [];
+                snapshot.forEach(docSnap => codesList.push(docSnap.data()));
+                renderCommunityCodes(codesList);
+            }, (error) => console.log("Codes sync error:", error));
+
+            // 4. Listen for Live Shared Canvas Pixel Matrix
+            onSnapshot(liveCanvasDoc, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.pixels && !isUserDrawing) {
+                        applyPixelMatrixToCanvas(data.pixels);
+                    }
+                }
+            }, (error) => console.log("Canvas sync error:", error));
+        }
+
+        // --- EXPOSE GLOBAL FUNCTIONS TO WINDOW ---
+        window.saveNewFarmAdmin = async function() {
+            if (!isAdmin) return alert("Yalnızca 'MinEFarm Mr.A' yetkisi olanlar farm ekleyebilir!");
+            const title = document.getElementById('mfTitle').value.trim();
+            const category = document.getElementById('mfCategory').value.trim();
+            const desc = document.getElementById('mfDesc').value.trim();
+            const materials = document.getElementById('mfMaterials').value.trim();
+
+            if (!title || !desc) return alert("Lütfen başlık ve açıklamayı doldurun.");
+
+            try {
+                await addDoc(publicFarmsCol, {
+                    title,
+                    category: category || "Genel Farm",
+                    desc,
+                    materials: materials || "Standart Bloklar",
+                    createdBy: "MinEFarm Mr.A",
+                    createdAt: serverTimestamp()
+                });
+                closeAddFarmModal();
+                document.getElementById('mfTitle').value = '';
+                document.getElementById('mfDesc').value = '';
+            } catch (e) {
+                console.error("Farm saving error:", e);
+            }
+        };
+
+        window.submitCodeOnline = async function() {
+            const title = document.getElementById('codeTitle').value.trim();
+            const code = document.getElementById('codeBody').value.trim();
+            const username = document.getElementById('usernameInput').value || "Anonim";
+
+            if (!title || !code) return alert("Lütfen kod ve başlığı eksiksiz girin.");
+
+            try {
+                await addDoc(publicCodesCol, {
+                    title,
+                    code,
+                    author: username,
+                    likes: 0,
+                    createdAt: serverTimestamp()
+                });
+                closeCodeModal();
+                document.getElementById('codeTitle').value = '';
+                document.getElementById('codeBody').value = '';
+            } catch(e) {
+                console.error("Code sync error:", e);
+            }
+        };
+
+        window.saveCanvasSnapshot = async function() {
+            const canvas = document.getElementById('mainCanvas');
+            const dataUrl = canvas.toDataURL();
+            const username = document.getElementById('usernameInput').value || "Sanatçı";
+
+            try {
+                await addDoc(publicArtsCol, {
+                    url: dataUrl,
+                    author: username,
+                    createdAt: serverTimestamp()
+                });
+                alert("Çiziminiz başarıyla online sunucuya kaydedildi!");
+            } catch (e) {
+                console.error("Canvas art save failed:", e);
+            }
+        };
+
+        window.clearCanvasOnline = async function() {
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, 152, 152);
+            saveCanvasStateToFirebase();
+        };
+
+        // Sync local 152x152 canvas stream to Firestore
+        window.saveCanvasStateToFirebase = async function() {
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            const imgData = ctx.getImageData(0, 0, 152, 152).data;
+            
+            // Compress simple pixel array for smooth real-time transport
+            const pixelArray = [];
+            for (let i = 0; i < imgData.length; i += 4) {
+                // Store non-black pixels with coordinate/color encoding
+                if (imgData[i] !== 0 || imgData[i+1] !== 0 || imgData[i+2] !== 0) {
+                    const idx = i / 4;
+                    const x = idx % 152;
+                    const y = Math.floor(idx / 152);
+                    const hex = "#" + ((1 << 24) + (imgData[i] << 16) + (imgData[i+1] << 8) + imgData[i+2]).toString(16).slice(1);
+                    pixelArray.push(`${x},${y},${hex}`);
+                }
+            }
+
+            try {
+                await setDoc(liveCanvasDoc, { pixels: pixelArray, updatedAt: serverTimestamp() });
+            } catch (e) {
+                console.warn("Live stream update throttling:", e);
+            }
+        };
+
+        function applyPixelMatrixToCanvas(pixels) {
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, 152, 152);
+
+            pixels.forEach(pStr => {
+                const [x, y, color] = pStr.split(',');
+                ctx.fillStyle = color;
+                ctx.fillRect(parseInt(x), parseInt(y), 1, 1);
+            });
+        }
+    </script>
+
+    <!-- INTERFACE & CANVAS DRAWING INTERACTION SCRIPT -->
+    <script>
+        // --- ADMIN ROLE CHECKER ---
+        const usernameInput = document.getElementById('usernameInput');
+        const roleBadge = document.getElementById('roleBadge');
+        const adminPanelStatus = document.getElementById('adminPanelStatus');
+        const adminNoticeTitle = document.getElementById('adminNoticeTitle');
+        const addFarmAdminBtn = document.getElementById('addFarmAdminBtn');
+
+        function checkAdminStatus() {
+            const val = usernameInput.value.trim();
+            if (val === "MinEFarm Mr.A") {
+                window.isAdmin = true;
+                roleBadge.textContent = "Yönetici (Admin)";
+                roleBadge.className = "text-[10px] text-amber-400 font-bold px-1";
+                adminNoticeTitle.textContent = "Yönetici Oturumu Açık";
+                adminNoticeTitle.className = "font-bold text-amber-400";
+                addFarmAdminBtn.classList.remove('hidden');
+            } else {
+                window.isAdmin = false;
+                roleBadge.textContent = "Üye";
+                roleBadge.className = "text-[10px] text-zinc-400 font-semibold px-1";
+                adminNoticeTitle.textContent = "Normal Kullanıcı";
+                adminNoticeTitle.className = "font-bold text-zinc-300";
+                addFarmAdminBtn.classList.add('hidden');
+            }
+        }
+        usernameInput.addEventListener('input', checkAdminStatus);
+        checkAdminStatus();
+
+        // --- NAVIGATION CONTROLLER ---
+        function switchTab(tabId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('text-emerald-400', 'bg-zinc-800/80');
+                btn.classList.add('text-zinc-400');
+            });
+
+            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('text-emerald-400', 'bg-zinc-800/80');
+                activeBtn.classList.remove('text-zinc-400');
+            }
+        }
+
+        // --- UI MODAL HANDLERS ---
+        function openAddFarmModal() { document.getElementById('addFarmModal').classList.remove('hidden'); }
+        function closeAddFarmModal() { document.getElementById('addFarmModal').classList.add('hidden'); }
+        function openCodeModal() { document.getElementById('addCodeModal').classList.remove('hidden'); }
+        function closeCodeModal() { document.getElementById('addCodeModal').classList.add('hidden'); }
+
+        // --- RENDER FUNCTIONS ---
+        function renderFarmsList(farms) {
+            const container = document.getElementById('farmsGrid');
+            container.innerHTML = farms.map(f => `
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition flex flex-col justify-between space-y-4">
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2 py-0.5 rounded font-mono">${f.category}</span>
+                            ${f.createdBy ? '<span class="text-[10px] bg-amber-950 text-amber-400 border border-amber-800 px-1.5 py-0.5 rounded">Admin</span>' : ''}
+                        </div>
+                        <h3 class="text-lg font-bold text-white">${f.title}</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">${f.desc}</p>
+                    </div>
+                    <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80 text-xs">
+                        <span class="text-zinc-500 font-bold block mb-1">📦 Gerekli Malzemeler:</span>
+                        <p class="text-zinc-300 font-mono text-[11px]">${f.materials}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderSavedArtworks(arts) {
+            const container = document.getElementById('savedArtsList');
+            if (!arts || arts.length === 0) {
+                container.innerHTML = `<p class="text-xs text-zinc-500 col-span-full py-4 text-center">Henüz kayıtlı çizim bulunmuyor.</p>`;
+                return;
+            }
+            container.innerHTML = arts.map(a => `
+                <div class="bg-zinc-950 border border-zinc-800 rounded-lg p-2 flex flex-col items-center">
+                    <img src="${a.url}" class="w-full aspect-square pixel-art rounded bg-black border border-zinc-800 mb-1">
+                    <span class="text-[10px] text-zinc-400 truncate w-full text-center">🎨 ${a.author || 'Anonim'}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderCommunityCodes(codes) {
+            const container = document.getElementById('codesContainer');
+            if (!codes || codes.length === 0) {
+                container.innerHTML = `<p class="text-xs text-zinc-500 py-4">Paylaşılmış kod bulunamadı.</p>`;
+                return;
+            }
+            container.innerHTML = codes.map(c => `
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-zinc-200 text-sm">${c.title}</h4>
+                        <span class="text-[11px] text-zinc-500">Paylaşan: ${c.author}</span>
+                    </div>
+                    <pre class="bg-zinc-950 border border-zinc-800 text-emerald-400 font-mono text-xs p-3 rounded-lg overflow-x-auto">${c.code}</pre>
+                </div>
+            `).join('');
+        }
+
+        // --- CONTINUOUS BRUSH & CANVAS LOGIC (152x152 Pixel Canvas) ---
+        const mainCanvas = document.getElementById('mainCanvas');
+        const ctx = mainCanvas.getContext('2d');
+        let currentTool = 'pencil';
+        let isUserDrawing = false;
+
+        // Initialize Canvas
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, 152, 152);
+
+        function setCanvasTool(tool) {
+            currentTool = tool;
+            document.getElementById('toolPencil').className = tool === 'pencil' 
+                ? 'mc-btn bg-emerald-600 text-white p-2 rounded-lg text-sm px-3 font-semibold flex items-center gap-1'
+                : 'mc-btn bg-zinc-700 hover:bg-zinc-600 text-zinc-200 p-2 rounded-lg text-sm px-3 flex items-center gap-1';
+            
+            document.getElementById('toolEraser').className = tool === 'eraser'
+                ? 'mc-btn bg-emerald-600 text-white p-2 rounded-lg text-sm px-3 font-semibold flex items-center gap-1'
+                : 'mc-btn bg-zinc-700 hover:bg-zinc-600 text-zinc-200 p-2 rounded-lg text-sm px-3 flex items-center gap-1';
+        }
+
+        function getCanvasCoords(e) {
+            const rect = mainCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const scaleX = mainCanvas.width / rect.width;
+            const scaleY = mainCanvas.height / rect.height;
+
+            const x = Math.floor((clientX - rect.left) * scaleX);
+            const y = Math.floor((clientY - rect.top) * scaleY);
+            return { x: Math.max(0, Math.min(151, x)), y: Math.max(0, Math.min(151, y)) };
+        }
+
+        function drawPixel(e) {
+            if (!isUserDrawing) return;
+            const coords = getCanvasCoords(e);
+            document.getElementById('cursorPos').textContent = `X: ${coords.x}, Y: ${coords.y}`;
+
+            const size = parseInt(document.getElementById('brushSize').value);
+            const color = currentTool === 'eraser' ? '#000000' : document.getElementById('canvasColor').value;
+
+            ctx.fillStyle = color;
+            ctx.fillRect(coords.x, coords.y, size, size);
+        }
+
+        // Mouse & Touch Continuous Drawing Event Listeners
+        mainCanvas.addEventListener('mousedown', (e) => {
+            isUserDrawing = true;
+            window.isUserDrawing = true;
+            drawPixel(e);
+        });
+
+        mainCanvas.addEventListener('mousemove', (e) => {
+            const coords = getCanvasCoords(e);
+            document.getElementById('cursorPos').textContent = `X: ${coords.x}, Y: ${coords.y}`;
+            if (isUserDrawing) drawPixel(e);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isUserDrawing) {
+                isUserDrawing = false;
+                window.isUserDrawing = false;
+                if (window.saveCanvasStateToFirebase) window.saveCanvasStateToFirebase();
+            }
+        });
+
+        // Touch Listeners for Mobile
+        mainCanvas.addEventListener('touchstart', (e) => {
+            isUserDrawing = true;
+            window.isUserDrawing = true;
+            drawPixel(e);
+        });
+
+        mainCanvas.addEventListener('touchmove', (e) => {
+            if (isUserDrawing) drawPixel(e);
+        });
+
+        window.addEventListener('touchend', () => {
+            if (isUserDrawing) {
+                isUserDrawing = false;
+                window.isUserDrawing = false;
+                if (window.saveCanvasStateToFirebase) window.saveCanvasStateToFirebase();
+            }
+        });
+
+        // --- SKIN EDITOR SIMPLE CANVAS ---
+        const skinCanvas = document.getElementById('skinCanvas');
+        const sCtx = skinCanvas.getContext('2d');
+        sCtx.fillStyle = '#e0ac69';
+        sCtx.fillRect(0, 0, 64, 64);
+        
+        let skinDrawing = false;
+        skinCanvas.addEventListener('mousedown', () => skinDrawing = true);
+        window.addEventListener('mouseup', () => skinDrawing = false);
+        skinCanvas.addEventListener('mousemove', (e) => {
+            if (!skinDrawing) return;
+            const rect = skinCanvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) * (64 / rect.width));
+            const y = Math.floor((e.clientY - rect.top) * (64 / rect.height));
+            sCtx.fillStyle = document.getElementById('skinColor').value;
+            sCtx.fillRect(x, y, 2, 2);
+        });
+
+        function downloadSkin() {
+            const link = document.createElement('a');
+            link.download = 'minefarm-skin.png';
+            link.href = skinCanvas.toDataURL();
+            link.click();
+        }
+
+        // --- MIN EFARM AI CHATBOT INTEGRATION ---
+        async function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const stream = document.getElementById('chatStream');
+            const userMsg = input.value.trim();
+            if (!userMsg) return;
+
+            // Append User Message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'bg-emerald-950/60 border border-emerald-800/80 rounded-lg p-3 text-sm text-emerald-200 ml-auto max-w-xl text-right';
+            userDiv.textContent = userMsg;
+            stream.appendChild(userDiv);
+            input.value = '';
+            stream.scrollTop = stream.scrollHeight;
+
+            // Placeholder AI Response
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'bg-zinc-800/60 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-300 max-w-xl';
+            aiDiv.textContent = "Düşünüyor...";
+            stream.appendChild(aiDiv);
+
+            // Fetch Gemini Response
+            try {
+                const apiKey = ""; // Canvas auto-provides API Key at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userMsg }] }],
+                        systemInstruction: {
+                            parts: [{ text: "Sen Minecraft uzmanı olan MinEFarm AI asistanısın. Farm tasarımları, redstone, komut blokları ve seed tavsiyelerinde kısa ve öz Türkçe bilgi ver." }]
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Üzgünüm, şu an cevap üretilemedi.";
+                aiDiv.textContent = aiText;
+            } catch (err) {
+                aiDiv.textContent = "Minecraft rehber verilerine erişilirken bir hata oluştu.";
+            }
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        // Enter key for AI Chat
+        document.getElementById('aiInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendAIMessage();
+        });
+    </script>
+</body>
+</html>
