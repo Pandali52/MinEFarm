@@ -315,6 +315,36 @@
             image-rendering: pixelated;
         }
     </style>
+
+    <!-- FIREBASE SDK (MODULAR) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, push, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCJRuVDTtwbEZx4GQBNmQW4vDTO9fzMZU",
+            authDomain: "minefarm-ccbb9.firebaseapp.com",
+            databaseURL: "https://minefarm-ccbb9-default-rtdb.firebaseio.com",
+            projectId: "minefarm-ccbb9",
+            storageBucket: "minefarm-ccbb9.firebasestorage.app",
+            messagingSenderId: "1043628408734",
+            appId: "1:1043628408734:web:b8b22666a4fa583822a08f",
+            measurementId: "G-X4Q3YL0G27"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Global State
+        window.dbRef = db;
+        window.fbRef = ref;
+        window.fbPush = push;
+        window.fbSet = set;
+        window.fbRemove = remove;
+        window.fbOnValue = onValue;
+
+        window.dispatchEvent(new Event('firebase-ready'));
+    </script>
 </head>
 <body>
 
@@ -462,14 +492,14 @@
 </div>
 
 <script>
-    // DATA STORES (Local Storage)
+    // DATA STORES
     let state = {
-        catalogs: JSON.parse(localStorage.getItem('mf_catalogs')) || [],
-        farmPosts: JSON.parse(localStorage.getItem('mf_farmPosts')) || [],
-        codes: JSON.parse(localStorage.getItem('mf_codes')) || [],
-        maps: JSON.parse(localStorage.getItem('mf_maps')) || [],
-        mods: JSON.parse(localStorage.getItem('mf_mods')) || [],
-        seeds: JSON.parse(localStorage.getItem('mf_seeds')) || []
+        catalogs: {},
+        farmPosts: {},
+        codes: {},
+        maps: {},
+        mods: {},
+        seeds: {}
     };
 
     let isAdmin = false;
@@ -479,21 +509,25 @@
     const CLOUD_NAME = "undpbby1";
     const UPLOAD_PRESET = "MinEFarm Sohbeti";
 
-    // INIT
+    // INIT FIREBASE SYNC
+    window.addEventListener('firebase-ready', () => {
+        const db = window.dbRef;
+        const ref = window.fbRef;
+        const onValue = window.fbOnValue;
+
+        ['catalogs', 'farmPosts', 'codes', 'maps', 'mods', 'seeds'].forEach(key => {
+            onValue(ref(db, key), (snapshot) => {
+                const data = snapshot.val();
+                state[key] = data ? data : {};
+                renderAll();
+            });
+        });
+    });
+
     window.onload = function() {
         drawPixelMLogo();
         initCanvas();
-        renderAll();
     };
-
-    function saveState() {
-        localStorage.setItem('mf_catalogs', JSON.stringify(state.catalogs));
-        localStorage.setItem('mf_farmPosts', JSON.stringify(state.farmPosts));
-        localStorage.setItem('mf_codes', JSON.stringify(state.codes));
-        localStorage.setItem('mf_maps', JSON.stringify(state.maps));
-        localStorage.setItem('mf_mods', JSON.stringify(state.mods));
-        localStorage.setItem('mf_seeds', JSON.stringify(state.seeds));
-    }
 
     // DRAW PIXEL "M" LOGO
     function drawPixelMLogo() {
@@ -501,25 +535,18 @@
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0,0,16,16);
 
-        // Dark Border/Background Frame
         ctx.fillStyle = "#1a4700";
         ctx.fillRect(0,0,16,16);
         ctx.fillStyle = "#52a818";
         ctx.fillRect(1,1,14,14);
 
-        // Pixel 'M' Shape (Turquoise / Cyan Emerald style)
         ctx.fillStyle = "#55ffff";
-        
-        // Left Column
         ctx.fillRect(3,3,2,10);
-        // Right Column
         ctx.fillRect(11,3,2,10);
-        // Middle V Shape
         ctx.fillRect(5,5,2,2);
         ctx.fillRect(7,7,2,2);
         ctx.fillRect(9,5,2,2);
 
-        // Highlights on M
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(3,3,1,3);
         ctx.fillRect(11,3,1,3);
@@ -669,32 +696,30 @@
         return tempCanvas.toDataURL();
     }
 
-    // FARM CATALOG & POSTS
+    // FIREBASE WRITE FUNCTIONS
     function saveFarmCatalog() {
         if(!isAdmin) return alert("Sadece yöneticiler katalog ekleyebilir!");
         const title = document.getElementById('catalogTitle').value.trim();
         const desc = document.getElementById('catalogDesc').value.trim();
         if(!title) return alert("Katalog başlığı giriniz!");
 
-        const newCatalog = {
-            id: Date.now(),
+        const newRef = window.fbPush(window.fbRef(window.dbRef, 'catalogs'));
+        window.fbSet(newRef, {
+            id: newRef.key,
             title: title,
             desc: desc,
             icon: getCanvasBase64(),
             author: document.getElementById('usernameInput').value || 'Yönetici'
-        };
+        });
 
-        state.catalogs.push(newCatalog);
-        saveState();
         document.getElementById('catalogTitle').value = '';
         document.getElementById('catalogDesc').value = '';
         clearCanvas();
-        renderCatalogs();
     }
 
     function openCatalog(id) {
         selectedCatalogId = id;
-        const cat = state.catalogs.find(c => c.id === id);
+        const cat = state.catalogs[id];
         if(!cat) return;
 
         document.getElementById('farmCatalogList').style.display = "none";
@@ -721,27 +746,24 @@
 
         if(!version || !desc) return alert("Sürüm ve açıklama zorunludur!");
 
-        const newPost = {
-            id: Date.now(),
+        const newRef = window.fbPush(window.fbRef(window.dbRef, 'farmPosts'));
+        window.fbSet(newRef, {
+            id: newRef.key,
             catalogId: selectedCatalogId,
             version: version,
             desc: desc,
             youtube: yt,
             img: img,
             author: document.getElementById('usernameInput').value || 'Oyuncu'
-        };
+        });
 
-        state.farmPosts.push(newPost);
-        saveState();
         document.getElementById('farmPostVersion').value = '';
         document.getElementById('farmPostDesc').value = '';
         document.getElementById('farmPostYoutube').value = '';
         document.getElementById('farmPostImgUrl').value = '';
         document.getElementById('farmUploadStatus').innerText = 'Görsel Seçildiğinde Otomatik Cloudinary\'ye Yüklenir';
-        renderFarmPosts();
     }
 
-    // OTHER CONTENT ADD FUNCTIONS
     function addCode() {
         const title = document.getElementById('codeTitle').value.trim();
         const command = document.getElementById('codeCommand').value.trim();
@@ -750,18 +772,18 @@
         if(!title || !command || !desc) return alert("Tüm alanları doldurunuz!");
         if(!command.startsWith('/')) return alert("Komut mutlaka '/' işareti ile başlamalıdır!");
 
-        state.codes.push({
-            id: Date.now(),
+        const newRef = window.fbPush(window.fbRef(window.dbRef, 'codes'));
+        window.fbSet(newRef, {
+            id: newRef.key,
             title: title,
             command: command,
             desc: desc,
             author: document.getElementById('usernameInput').value || 'Oyuncu'
         });
-        saveState();
+
         document.getElementById('codeTitle').value = '';
         document.getElementById('codeCommand').value = '';
         document.getElementById('codeDesc').value = '';
-        renderCodes();
     }
 
     function addMap() {
@@ -772,20 +794,20 @@
 
         if(!title || !url || !version) return alert("Başlık, URL ve Sürüm zorunludur!");
 
-        state.maps.push({
-            id: Date.now(),
+        const newRef = window.fbPush(window.fbRef(window.dbRef, 'maps'));
+        window.fbSet(newRef, {
+            id: newRef.key,
             title: title,
             url: url,
             version: version,
             img: img,
             author: document.getElementById('usernameInput').value || 'Oyuncu'
         });
-        saveState();
+
         document.getElementById('mapTitle').value = '';
         document.getElementById('mapUrl').value = '';
         document.getElementById('mapVersion').value = '';
         document.getElementById('mapImgUrl').value = '';
-        renderMaps();
     }
 
     function addMod() {
@@ -796,20 +818,20 @@
 
         if(!title || !url || !version) return alert("Başlık, URL ve Sürüm zorunludur!");
 
-        state.mods.push({
-            id: Date.now(),
+        const newRef = window.fbPush(window.fbRef(window.dbRef, 'mods'));
+        window.fbSet(newRef, {
+            id: newRef.key,
             title: title,
             url: url,
             version: version,
             img: img,
             author: document.getElementById('usernameInput').value || 'Oyuncu'
         });
-        saveState();
+
         document.getElementById('modTitle').value = '';
         document.getElementById('modUrl').value = '';
         document.getElementById('modVersion').value = '';
         document.getElementById('modImgUrl').value = '';
-        renderMods();
     }
 
     function addSeed() {
@@ -820,30 +842,28 @@
 
         if(!title || !version || !code) return alert("Tüm alanları doldurunuz!");
 
-        state.seeds.push({
-            id: Date.now(),
+        const newRef = window.fbPush(window.fbRef(window.dbRef, 'seeds'));
+        window.fbSet(newRef, {
+            id: newRef.key,
             title: title,
             version: version,
             code: code,
             img: img,
             author: document.getElementById('usernameInput').value || 'Oyuncu'
         });
-        saveState();
+
         document.getElementById('seedTitle').value = '';
         document.getElementById('seedVersion').value = '';
         document.getElementById('seedCode').value = '';
         document.getElementById('seedImgUrl').value = '';
-        renderSeeds();
     }
 
     // DELETE ITEM (Admin Only)
-    function deleteItem(type, id) {
+    function deleteItem(type, firebaseKey) {
         if(!isAdmin) return;
         if(!confirm("Bu içeriği kalıcı olarak silmek istediğinize emin misiniz?")) return;
 
-        state[type] = state[type].filter(item => item.id !== id);
-        saveState();
-        renderAll();
+        window.fbRemove(window.fbRef(window.dbRef, `${type}/${firebaseKey}`));
     }
 
     // RENDERING FUNCTIONS
@@ -853,21 +873,24 @@
         renderMaps();
         renderMods();
         renderSeeds();
+        if(selectedCatalogId) renderFarmPosts();
     }
 
     function renderCatalogs() {
         const list = document.getElementById('farmCatalogList');
         list.innerHTML = '';
-        state.catalogs.forEach(cat => {
+        const cats = state.catalogs;
+        Object.keys(cats).forEach(key => {
+            const cat = cats[key];
             const el = document.createElement('div');
             el.className = 'catalog-item';
             el.innerHTML = `
                 <img src="${cat.icon}">
                 <div style="font-size: 9px; margin-top: 5px; color: var(--mc-gold);">${cat.title}</div>
                 <div style="font-size: 6px; color: #888;">Ekleyen: ${cat.author}</div>
-                ${isAdmin ? `<button class="btn btn-danger" style="margin-top:5px; font-size:6px;" onclick="event.stopPropagation(); deleteItem('catalogs', ${cat.id})">🗑️ Sil</button>` : ''}
+                ${isAdmin ? `<button class="btn btn-danger" style="margin-top:5px; font-size:6px;" onclick="event.stopPropagation(); deleteItem('catalogs', '${key}')">🗑️ Sil</button>` : ''}
             `;
-            el.onclick = () => openCatalog(cat.id);
+            el.onclick = () => openCatalog(key);
             list.appendChild(el);
         });
     }
@@ -875,22 +898,25 @@
     function renderFarmPosts() {
         const list = document.getElementById('farmPostList');
         list.innerHTML = '';
-        const posts = state.farmPosts.filter(p => p.catalogId === selectedCatalogId);
+        const posts = state.farmPosts;
 
-        posts.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('farmPosts', ${p.id})">🗑️ Sil</button>` : ''}
-                <div class="card-header">
-                    <span class="card-title">Sürüm: ${p.version}</span>
-                    <span class="card-author">Gönderen: ${p.author}</span>
-                </div>
-                <div>${p.desc}</div>
-                ${p.img ? `<img src="${p.img}" class="card-img">` : ''}
-                ${p.youtube ? `<div style="margin-top:5px;"><a href="${p.youtube}" target="_blank" style="color:var(--mc-accent);">[YouTube Anlatımını İzle]</a></div>` : ''}
-            `;
-            list.appendChild(card);
+        Object.keys(posts).forEach(key => {
+            const p = posts[key];
+            if(p.catalogId === selectedCatalogId) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    ${isAdmin ? `<button class="card-delete" onclick="deleteItem('farmPosts', '${key}')" style="display:block;">🗑️ Sil</button>` : ''}
+                    <div class="card-header">
+                        <span class="card-title">Sürüm: ${p.version}</span>
+                        <span class="card-author">Gönderen: ${p.author}</span>
+                    </div>
+                    <div>${p.desc}</div>
+                    ${p.img ? `<img src="${p.img}" class="card-img">` : ''}
+                    ${p.youtube ? `<div style="margin-top:5px;"><a href="${p.youtube}" target="_blank" style="color:var(--mc-accent);">[YouTube Anlatımını İzle]</a></div>` : ''}
+                `;
+                list.appendChild(card);
+            }
         });
     }
 
@@ -898,31 +924,38 @@
         const list = document.getElementById('codeList');
         const query = document.getElementById('codeSearchInput').value.toLowerCase();
         list.innerHTML = '';
+        const codes = state.codes;
 
-        state.codes.filter(c => c.title.toLowerCase().includes(query) || c.command.toLowerCase().includes(query)).forEach(c => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('codes', ${c.id})">🗑️ Sil</button>` : ''}
-                <div class="card-header">
-                    <span class="card-title">${c.title}</span>
-                    <span class="card-author">Gönderen: ${c.author}</span>
-                </div>
-                <div style="background:#000; padding:5px; color:var(--mc-accent); border:1px solid #333; margin: 5px 0;">${c.command}</div>
-                <div>${c.desc}</div>
-            `;
-            list.appendChild(card);
+        Object.keys(codes).forEach(key => {
+            const c = codes[key];
+            if(c.title.toLowerCase().includes(query) || c.command.toLowerCase().includes(query)) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    ${isAdmin ? `<button class="card-delete" onclick="deleteItem('codes', '${key}')" style="display:block;">🗑️ Sil</button>` : ''}
+                    <div class="card-header">
+                        <span class="card-title">${c.title}</span>
+                        <span class="card-author">Gönderen: ${c.author}</span>
+                    </div>
+                    <div style="background:#000; padding:5px; color:var(--mc-accent); border:1px solid #333; margin: 5px 0;">${c.command}</div>
+                    <div>${c.desc}</div>
+                `;
+                list.appendChild(card);
+            }
         });
     }
 
     function renderMaps() {
         const list = document.getElementById('mapList');
         list.innerHTML = '';
-        state.maps.forEach(m => {
+        const maps = state.maps;
+
+        Object.keys(maps).forEach(key => {
+            const m = maps[key];
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('maps', ${m.id})">🗑️ Sil</button>` : ''}
+                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('maps', '${key}')" style="display:block;">🗑️ Sil</button>` : ''}
                 <div class="card-header">
                     <span class="card-title">${m.title} (v${m.version})</span>
                     <span class="card-author">Gönderen: ${m.author}</span>
@@ -937,11 +970,14 @@
     function renderMods() {
         const list = document.getElementById('modList');
         list.innerHTML = '';
-        state.mods.forEach(m => {
+        const mods = state.mods;
+
+        Object.keys(mods).forEach(key => {
+            const m = mods[key];
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('mods', ${m.id})">🗑️ Sil</button>` : ''}
+                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('mods', '${key}')" style="display:block;">🗑️ Sil</button>` : ''}
                 <div class="card-header">
                     <span class="card-title">${m.title} (v${m.version})</span>
                     <span class="card-author">Gönderen: ${m.author}</span>
@@ -956,11 +992,14 @@
     function renderSeeds() {
         const list = document.getElementById('seedList');
         list.innerHTML = '';
-        state.seeds.forEach(s => {
+        const seeds = state.seeds;
+
+        Object.keys(seeds).forEach(key => {
+            const s = seeds[key];
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('seeds', ${s.id})">🗑️ Sil</button>` : ''}
+                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('seeds', '${key}')" style="display:block;">🗑️ Sil</button>` : ''}
                 <div class="card-header">
                     <span class="card-title">${s.title} (v${s.version})</span>
                     <span class="card-author">Gönderen: ${s.author}</span>
