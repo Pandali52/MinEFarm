@@ -3,752 +3,975 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MineFarm Hub</title>
-    <!-- Pixel Font -->
+    <title>MinEFarm - Minecraft Topluluk Uygulaması</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
-
     <style>
         :root {
-            --bg-color: #2e7d32;
-            --creeper-dark: #1b5e20;
-            --creeper-black: #000000;
-            --panel-bg: #4caf50;
-            --panel-border: #1b5e20;
-            --text-color: #ffffff;
-            --accent-yellow: #ffeb3b;
+            --mc-green: #388700;
+            --mc-dark-green: #1a4700;
+            --mc-light-green: #52a818;
+            --mc-dirt: #573d26;
+            --mc-bg: #2d5a1e;
+            --mc-border: #000000;
+            --mc-accent: #55ffff;
+            --mc-red: #ff5555;
+            --mc-gold: #ffaa00;
         }
 
         * {
             box-sizing: border-box;
-            font-family: 'Press Start 2P', cursive;
+            font-family: 'Press Start 2P', cursive, monospace;
             user-select: none;
         }
 
         body {
             margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            /* Minecraft Creeper Dokulu Arka Plan */
-            background-image: 
-                linear-gradient(45deg, var(--creeper-dark) 25%, transparent 25%), 
-                linear-gradient(-45deg, var(--creeper-dark) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, var(--creeper-dark) 75%),
-                linear-gradient(-45deg, transparent 75%, var(--creeper-dark) 75%);
-            background-size: 40px 40px;
-            background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        header {
-            background-color: #1b5e20;
-            border-bottom: 4px solid #000;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 4px 0 #000;
-        }
-
-        h1 {
-            font-size: 16px;
-            margin: 0 0 10px 0;
-            text-shadow: 2px 2px #000;
-            color: #a5d6a7;
-        }
-
-        /* Navigasyon / Sekmeler */
-        nav {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            flex-wrap: wrap;
             padding: 10px;
-            background: rgba(0,0,0,0.4);
+            background-color: var(--mc-bg);
+            background-image: 
+                radial-gradient(#1e3c14 15%, transparent 16%),
+                radial-gradient(#1e3c14 15%, transparent 16%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            color: #ffffff;
+            font-size: 10px;
         }
 
-        .tab-btn {
-            background: #81c784;
-            border: 3px solid #000;
-            color: #000;
-            padding: 8px 10px;
-            font-size: 9px;
-            cursor: pointer;
-            box-shadow: inset -2px -2px 0px #388e3c;
-        }
-
-        .tab-btn.active {
-            background: var(--accent-yellow);
-            box-shadow: inset -2px -2px 0px #fbc02d;
-        }
-
-        /* Ana İçerik Konteyneri */
-        main {
-            flex: 1;
-            padding: 20px;
-            max-width: 900px;
-            width: 100%;
+        .container {
+            max-width: 800px;
             margin: 0 auto;
+            background: rgba(0, 0, 0, 0.65);
+            border: 4px solid var(--mc-border);
+            padding: 15px;
+            box-shadow: 0 0 15px #000;
         }
 
-        .section {
-            display: none;
-            background: rgba(0, 0, 0, 0.75);
-            border: 4px solid #fff;
-            padding: 20px;
-            box-shadow: 6px 6px 0px #000;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        /* Kullanıcı Kimliği Girişi */
-        .user-bar {
+        /* HEADER & LOGO */
+        .header {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            background: var(--mc-dirt);
+            border: 4px solid var(--mc-border);
+            padding: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 10px;
-            background: #2e7d32;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pixel-logo {
+            width: 48px;
+            height: 48px;
+            image-rendering: pixelated;
+        }
+
+        .app-title {
+            color: var(--mc-accent);
+            text-shadow: 2px 2px #000;
+            font-size: 16px;
+        }
+
+        .auth-box {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            background: rgba(0,0,0,0.5);
             padding: 8px;
             border: 2px solid #000;
         }
 
-        input[type="text"], input[type="url"], textarea {
-            width: 100%;
-            padding: 10px;
+        .auth-box input {
             background: #000;
-            border: 2px solid #81c784;
+            border: 2px solid #555;
             color: #fff;
-            font-size: 10px;
-            margin-bottom: 10px;
-            outline: none;
+            padding: 4px;
+            font-size: 8px;
         }
 
-        button.btn-main {
-            background: #4caf50;
-            border: 3px solid #000;
+        .admin-badge {
+            display: none;
+            background: var(--mc-red);
             color: #fff;
-            padding: 10px 15px;
-            font-size: 10px;
-            cursor: pointer;
-            text-shadow: 1px 1px #000;
-            box-shadow: inset -2px -2px 0 #1b5e20;
+            padding: 3px 6px;
+            font-size: 8px;
+            border: 1px solid #000;
+            text-align: center;
         }
 
-        button.btn-main:hover {
-            background: #66bb6a;
-        }
-
-        /* Kart Listeleri */
-        .card-list {
+        /* NAV TABS */
+        .nav-tabs {
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
+            gap: 5px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
         }
 
+        .tab-btn {
+            background: var(--mc-dark-green);
+            color: #fff;
+            border: 3px solid var(--mc-border);
+            padding: 10px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 9px;
+        }
+
+        .tab-btn.active {
+            background: var(--mc-light-green);
+            color: #000;
+            border-color: #fff;
+        }
+
+        /* CONTENT PANELS */
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* BUTTONS & INPUTS */
+        .btn {
+            background: var(--mc-green);
+            color: #fff;
+            border: 3px solid var(--mc-border);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 9px;
+            text-shadow: 1px 1px #000;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: var(--mc-light-green);
+            color: #000;
+            text-shadow: none;
+        }
+
+        .btn-danger {
+            background: var(--mc-red);
+        }
+
+        .btn-danger:hover {
+            background: #ff7777;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background: #111;
+            border: 2px solid #444;
+            color: #fff;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 9px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 60px;
+        }
+
+        /* CARDS & ITEMS */
         .card {
-            background: #1b5e20;
-            border: 3px solid #fff;
-            padding: 15px;
+            background: rgba(30, 30, 30, 0.9);
+            border: 3px solid var(--mc-border);
+            padding: 10px;
+            margin-bottom: 10px;
             position: relative;
         }
 
-        .card-title {
-            color: var(--accent-yellow);
-            font-size: 11px;
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #444;
+            padding-bottom: 5px;
             margin-bottom: 8px;
         }
 
+        .card-title {
+            color: var(--mc-gold);
+            font-size: 11px;
+        }
+
         .card-author {
-            font-size: 8px;
-            color: #a5d6a7;
-            margin-top: 8px;
+            color: #aaa;
+            font-size: 7px;
         }
 
         .card-img {
             max-width: 100%;
-            height: auto;
+            max-height: 250px;
             border: 2px solid #000;
             margin-top: 8px;
             display: block;
+            image-rendering: pixelated;
         }
 
-        /* Farmlar Özel - 16x16 Tuval ve 36 Renk Paleti */
-        #canvas-container {
+        .card-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--mc-red);
+            color: #fff;
+            border: 1px solid #000;
+            padding: 3px 6px;
+            cursor: pointer;
+            font-size: 8px;
+            display: none;
+        }
+
+        /* CANVAS 16x16 EDITOR */
+        .canvas-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 10px 0;
-            background: #333;
-            padding: 10px;
-            border: 2px solid #fff;
-        }
-
-        #pixel-canvas {
-            display: grid;
-            grid-template-columns: repeat(16, 15px);
-            grid-template-rows: repeat(16, 15px);
-            gap: 1px;
-            background: #555;
-            cursor: crosshair;
-        }
-
-        .pixel {
-            width: 15px;
-            height: 15px;
-            background: #ffffff;
-        }
-
-        .color-palette {
-            display: grid;
-            grid-template-columns: repeat(12, 20px);
-            gap: 3px;
-            margin-top: 12px;
             background: #222;
-            padding: 6px;
-            border: 2px solid #555;
+            padding: 10px;
+            border: 2px solid #000;
+            margin-bottom: 10px;
+        }
+
+        #pixelCanvas {
+            border: 2px solid #fff;
+            cursor: crosshair;
+            image-rendering: pixelated;
+            background: #fff;
+        }
+
+        .palette {
+            display: flex;
+            flex-wrap: wrap;
+            width: 256px;
+            gap: 2px;
+            margin-top: 8px;
+            max-height: 100px;
+            overflow-y: auto;
         }
 
         .color-box {
-            width: 20px;
-            height: 20px;
+            width: 14px;
+            height: 14px;
             border: 1px solid #000;
             cursor: pointer;
         }
 
-        .color-box:hover {
-            transform: scale(1.1);
-            border-color: #fff;
+        .color-box.selected {
+            border: 2px solid #fff;
+            transform: scale(1.2);
         }
 
-        /* Komut Blokları */
-        .code-block {
-            background: #000;
-            color: #64ffda;
+        /* SEARCH BAR */
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        /* FORM BOX */
+        .form-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--mc-green);
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-msg {
+            font-size: 8px;
+            color: var(--mc-accent);
+            margin-bottom: 5px;
+        }
+
+        .farm-catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .catalog-item {
+            background: #151515;
+            border: 2px solid var(--mc-dark-green);
             padding: 8px;
-            font-family: monospace;
-            font-size: 10px;
-            border-left: 3px solid var(--accent-yellow);
-            margin: 5px 0;
-            word-break: break-all;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .catalog-item:hover {
+            border-color: var(--mc-light-green);
+        }
+
+        .catalog-item img {
+            width: 64px;
+            height: 64px;
+            image-rendering: pixelated;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>MINEFARM HUB</h1>
-        <div class="user-bar">
-            <span style="font-size: 8px;">KULLANICI:</span>
-            <input type="text" id="username-input" value="Steve" placeholder="Kullanıcı Adınız" style="margin:0; width: 180px;">
+<div class="container">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo-box">
+            <!-- PIXEL "M" LOGO -->
+            <canvas id="logoCanvas" class="pixel-logo" width="16" height="16"></canvas>
+            <div class="app-title">MinEFarm</div>
         </div>
-        <nav>
-            <button class="tab-btn active" onclick="switchTab('farmlar')">FARMLAR</button>
-            <button class="tab-btn" onclick="switchTab('kodlar')">KODLAR</button>
-            <button class="tab-btn" onclick="switchTab('haritalar')">HARİTALAR</button>
-            <button class="tab-btn" onclick="switchTab('modlar')">MODLAR</button>
-            <button class="tab-btn" onclick="switchTab('seedler')">SEEDLER</button>
-        </nav>
-    </header>
+        <div class="auth-box">
+            <input type="text" id="usernameInput" placeholder="Kullanıcı Adı" value="Oyuncu1">
+            <input type="text" id="accessCodeInput" placeholder="Erişim Kodu" oninput="checkAdminRole()">
+            <div id="adminBadge" class="admin-badge">YÖNETİCİ</div>
+        </div>
+    </div>
 
-    <main>
-        <!-- FARMLAR BÖLÜMÜ -->
-        <section id="sec-farmlar" class="section active">
-            <h2>FARM KATALOGLARI</h2>
-            <div id="admin-farm-panel" style="display:none; margin-bottom: 15px; border: 2px dashed var(--accent-yellow); padding: 10px;">
-                <h3 style="color:var(--accent-yellow); font-size:10px;">YÖNETİCİ: YENİ FARM KATEGORİSİ EKLENİYOR</h3>
-                <input type="text" id="farm-cat-title" placeholder="Farm Başlığı">
-                <textarea id="farm-cat-desc" placeholder="Farm Açıklaması"></textarea>
-                
-                <p style="font-size: 8px;">16x16 KATALOG KAPAĞI ÇİZİN (36 RENK PALETİ):</p>
-                <div id="canvas-container">
-                    <div id="pixel-canvas"></div>
-                    <div class="color-palette" id="color-palette-box"></div>
-                </div>
-                <button class="btn-main" onclick="saveFarmCategory()">KATEGORİYİ YÜKLE</button>
-            </div>
+    <!-- NAV TABS -->
+    <div class="nav-tabs">
+        <div class="tab-btn active" onclick="switchTab('farmlar')">FARMLAR</div>
+        <div class="tab-btn" onclick="switchTab('kodlar')">KODLAR</div>
+        <div class="tab-btn" onclick="switchTab('haritalar')">HARİTALAR</div>
+        <div class="tab-btn" onclick="switchTab('modlar')">MODLAR</div>
+        <div class="tab-btn" onclick="switchTab('seedler')">SEEDLER</div>
+    </div>
 
-            <div id="farm-categories-list" class="card-list"></div>
-
-            <!-- Seçili Farmın Gönderileri -->
-            <div id="farm-posts-container" style="display:none; margin-top: 20px; border-top: 3px solid #fff; padding-top: 10px;">
-                <button class="btn-main" onclick="closeFarmPosts()" style="background:#d32f2f; margin-bottom:10px;">← GERİ DÖN</button>
-                <h3 id="current-farm-title" style="color: var(--accent-yellow); margin-bottom: 10px;"></h3>
-                <button class="btn-main" onclick="toggleFarmPostForm()" style="margin-bottom: 10px;">BU FARMLA İLGİLİ GÖNDERİ PAYLAŞ</button>
-                
-                <div id="farm-post-form" style="display:none; background:#000; padding:10px; margin-bottom:15px; border:2px solid #81c784;">
-                    <input type="text" id="post-version" placeholder="Sürüm (örn: 1.20.1)">
-                    <textarea id="post-desc" placeholder="Gönderi Açıklaması"></textarea>
-                    <p style="font-size: 8px;">GÖRSEL YÜKLE (Opsiyonel):</p>
-                    <input type="file" id="post-file" accept="image/*" style="margin-bottom: 10px;">
-                    <input type="url" id="post-yt-url" placeholder="Veya YouTube Video Bağlantısı Linki">
-                    <button class="btn-main" onclick="submitFarmPost()">GÖNDERİYİ PAYLAŞ</button>
-                </div>
-
-                <div id="farm-posts-list" class="card-list"></div>
-            </div>
-        </section>
-
-        <!-- KODLAR BÖLÜMÜ -->
-        <section id="sec-kodlar" class="section">
-            <h2>KODLAR & KOMUTLAR</h2>
-            <input type="text" id="code-search-input" placeholder="🔍 Kapsamlı Kod Ara..." oninput="filterCodes()">
+    <!-- FARMLAR PANEL -->
+    <div id="panel-farmlar" class="panel active">
+        <!-- Admin Only Catalog Add -->
+        <div id="adminCatalogForm" class="form-box" style="display: none;">
+            <div style="color: var(--mc-gold); margin-bottom: 8px;">+ YENİ FARM KATALOĞU OLUŞTUR (YÖNETİCİ)</div>
+            <input type="text" id="catalogTitle" placeholder="Katalog Başlığı">
+            <textarea id="catalogDesc" placeholder="Katalog Açıklaması"></textarea>
             
-            <div style="background: rgba(0,0,0,0.5); padding: 10px; margin-bottom: 15px; border:2px solid #1b5e20;">
-                <h3 style="font-size: 10px; margin-bottom: 8px;">YENİ KOD EKLE</h3>
-                <input type="text" id="code-title" placeholder="Kod Başlığı">
-                <input type="text" id="code-command" placeholder="Komut (Zorunlu '/' ile başlamalı)">
-                <textarea id="code-desc" placeholder="Açıklama"></textarea>
-                <button class="btn-main" onclick="submitCode()">KODU YAYINLA</button>
+            <div class="canvas-container">
+                <div style="margin-bottom: 5px;">16x16 İkon Çizimi</div>
+                <canvas id="pixelCanvas" width="256" height="256"></canvas>
+                <div class="palette" id="colorPalette"></div>
+                <div style="margin-top: 5px; display: flex; gap: 5px;">
+                    <button class="btn" onclick="setEraser()">Silgi</button>
+                    <button class="btn btn-danger" onclick="clearCanvas()">Temizle</button>
+                </div>
             </div>
 
-            <div id="codes-list" class="card-list"></div>
-        </section>
+            <button class="btn" onclick="saveFarmCatalog()">Kataloğu Kaydet</button>
+        </div>
 
-        <!-- HARİTALAR BÖLÜMÜ -->
-        <section id="sec-haritalar" class="section">
-            <h2>HARİTA PAYLAŞIMI</h2>
-            <div style="background: rgba(0,0,0,0.5); padding: 10px; margin-bottom: 15px; border:2px solid #1b5e20;">
-                <input type="text" id="map-title" placeholder="Harita Başlığı">
-                <input type="url" id="map-url" placeholder="İndirme Web Sitesi Adresi (URL)">
-                <input type="text" id="map-version" placeholder="Sürüm">
-                <p style="font-size:8px;">KAPAK RESMİ SEÇ:</p>
-                <input type="file" id="map-file" accept="image/*">
-                <button class="btn-main" onclick="submitMap()" style="margin-top:10px;">HARİTAYI PAYLAŞ</button>
+        <div style="margin-bottom: 10px; color: #aaa;">Kataloglar:</div>
+        <div id="farmCatalogList" class="farm-catalog-grid"></div>
+
+        <!-- Selected Catalog Posts Section -->
+        <div id="catalogPostSection" style="display: none;">
+            <button class="btn" onclick="closeCatalogView()" style="margin-bottom: 10px;">&lt;- Kataloglara Dön</button>
+            <h3 id="selectedCatalogTitle" style="color: var(--mc-accent);"></h3>
+            <p id="selectedCatalogDesc" style="font-size: 8px; color: #ccc;"></p>
+
+            <div class="form-box">
+                <div style="margin-bottom: 8px; color: var(--mc-gold);">Bu Farmla İlgili Gönderi Paylaş</div>
+                <input type="text" id="farmPostVersion" placeholder="Sürüm (Örn: 1.20.1)">
+                <textarea id="farmPostDesc" placeholder="Gönderi Açıklaması"></textarea>
+                <input type="text" id="farmPostYoutube" placeholder="YouTube Video Adresi (İsteğe Bağlı)">
+                
+                <div class="status-msg" id="farmUploadStatus">Görsel Seçildiğinde Otomatik Cloudinary'ye Yüklenir</div>
+                <input type="file" id="farmPostImgInput" accept="image/*" onchange="autoUploadCloudinary(this, 'farmPostImgUrl', 'farmUploadStatus')">
+                <input type="hidden" id="farmPostImgUrl">
+
+                <button class="btn" onclick="addFarmPost()" style="margin-top: 8px;">Gönderiyi Paylaş</button>
             </div>
-            <div id="maps-list" class="card-list"></div>
-        </section>
 
-        <!-- MODLAR BÖLÜMÜ -->
-        <section id="sec-modlar" class="section">
-            <h2>MOD PAYLAŞIMI</h2>
-            <div style="background: rgba(0,0,0,0.5); padding: 10px; margin-bottom: 15px; border:2px solid #1b5e20;">
-                <input type="text" id="mod-title" placeholder="Mod Başlığı">
-                <input type="url" id="mod-url" placeholder="İndirme Web Sitesi Adresi (URL)">
-                <input type="text" id="mod-version" placeholder="Sürüm">
-                <p style="font-size:8px;">KAPAK RESMİ SEÇ:</p>
-                <input type="file" id="mod-file" accept="image/*">
-                <button class="btn-main" onclick="submitMod()" style="margin-top:10px;">MODU PAYLAŞ</button>
-            </div>
-            <div id="mods-list" class="card-list"></div>
-        </section>
+            <div id="farmPostList"></div>
+        </div>
+    </div>
 
-        <!-- SEEDLER BÖLÜMÜ -->
-        <section id="sec-seedler" class="section">
-            <h2>WORLD SEEDLERİ</h2>
-            <div style="background: rgba(0,0,0,0.5); padding: 10px; margin-bottom: 15px; border:2px solid #1b5e20;">
-                <input type="text" id="seed-title" placeholder="Başlık">
-                <input type="text" id="seed-version" placeholder="Sürüm">
-                <input type="text" id="seed-code" placeholder="Seed Kodu (örn: -455211845)">
-                <p style="font-size:8px;">GÖRSEL SEÇ:</p>
-                <input type="file" id="seed-file" accept="image/*">
-                <button class="btn-main" onclick="submitSeed()" style="margin-top:10px;">SEED'İ PAYLAŞ</button>
-            </div>
-            <div id="seeds-list" class="card-list"></div>
-        </section>
-    </main>
+    <!-- KODLAR PANEL -->
+    <div id="panel-kodlar" class="panel">
+        <div class="search-box">
+            <input type="text" id="codeSearchInput" placeholder="Kodlarda Ara..." oninput="renderCodes()">
+        </div>
 
-    <script>
-        // ----------------------------------------------------
-        // FIREBASE YAPILANDIRMASI
-        // ----------------------------------------------------
-        const firebaseConfig = { 
-            apiKey: "AIzaSyBqC43kSzGNgK00ORcmDHhDYkUVjhwCjmU", 
-            authDomain: "minefarm-a5199.firebaseapp.com", 
-            databaseURL: "https://minefarm-a5199-default-rtdb.firebaseio.com", 
-            projectId: "minefarm-a5199", 
-            storageBucket: "minefarm-a5199.firebasestorage.app", 
-            messagingSenderId: "81140698124", 
-            appId: "1:81140698124:web:828602f12638ae6fd8b229", 
-            measurementId: "G-26X2V8L7WZ" 
-        };
+        <div class="form-box">
+            <div style="color: var(--mc-gold); margin-bottom: 8px;">Yeni Kod/Komut Paylaş</div>
+            <input type="text" id="codeTitle" placeholder="Başlık">
+            <input type="text" id="codeCommand" placeholder="Komut (Zorunlu: / ile başlamalı)">
+            <textarea id="codeDesc" placeholder="Açıklama"></textarea>
+            <button class="btn" onclick="addCode()">Kodu Paylaş</button>
+        </div>
+
+        <div id="codeList"></div>
+    </div>
+
+    <!-- HARİTALAR PANEL -->
+    <div id="panel-haritalar" class="panel">
+        <div class="form-box">
+            <div style="color: var(--mc-gold); margin-bottom: 8px;">Harita Paylaş</div>
+            <input type="text" id="mapTitle" placeholder="Başlık">
+            <input type="text" id="mapUrl" placeholder="Web Sitesi Adresi (Download Linki)">
+            <input type="text" id="mapVersion" placeholder="Sürüm">
+            
+            <div class="status-msg" id="mapUploadStatus">Kapak Görseli Otomatik Yüklenir</div>
+            <input type="file" id="mapImgInput" accept="image/*" onchange="autoUploadCloudinary(this, 'mapImgUrl', 'mapUploadStatus')">
+            <input type="hidden" id="mapImgUrl">
+
+            <button class="btn" onclick="addMap()" style="margin-top: 8px;">Haritayı Paylaş</button>
+        </div>
+
+        <div id="mapList"></div>
+    </div>
+
+    <!-- MODLAR PANEL -->
+    <div id="panel-modlar" class="panel">
+        <div class="form-box">
+            <div style="color: var(--mc-gold); margin-bottom: 8px;">Mod Paylaş</div>
+            <input type="text" id="modTitle" placeholder="Başlık">
+            <input type="text" id="modUrl" placeholder="Web Sitesi Adresi (Download Linki)">
+            <input type="text" id="modVersion" placeholder="Sürüm">
+            
+            <div class="status-msg" id="modUploadStatus">Kapak Görseli Otomatik Yüklenir</div>
+            <input type="file" id="modImgInput" accept="image/*" onchange="autoUploadCloudinary(this, 'modImgUrl', 'modUploadStatus')">
+            <input type="hidden" id="modImgUrl">
+
+            <button class="btn" onclick="addMod()" style="margin-top: 8px;">Modu Paylaş</button>
+        </div>
+
+        <div id="modList"></div>
+    </div>
+
+    <!-- SEEDLER PANEL -->
+    <div id="panel-seedler" class="panel">
+        <div class="form-box">
+            <div style="color: var(--mc-gold); margin-bottom: 8px;">Seed Paylaş</div>
+            <input type="text" id="seedTitle" placeholder="Başlık">
+            <input type="text" id="seedVersion" placeholder="Sürüm">
+            <input type="text" id="seedCode" placeholder="Seed Kodu">
+            
+            <div class="status-msg" id="seedUploadStatus">Görsel Otomatik Yüklenir</div>
+            <input type="file" id="seedImgInput" accept="image/*" onchange="autoUploadCloudinary(this, 'seedImgUrl', 'seedUploadStatus')">
+            <input type="hidden" id="seedImgUrl">
+
+            <button class="btn" onclick="addSeed()" style="margin-top: 8px;">Seedi Paylaş</button>
+        </div>
+
+        <div id="seedList"></div>
+    </div>
+</div>
+
+<script>
+    // DATA STORES (Local Storage)
+    let state = {
+        catalogs: JSON.parse(localStorage.getItem('mf_catalogs')) || [],
+        farmPosts: JSON.parse(localStorage.getItem('mf_farmPosts')) || [],
+        codes: JSON.parse(localStorage.getItem('mf_codes')) || [],
+        maps: JSON.parse(localStorage.getItem('mf_maps')) || [],
+        mods: JSON.parse(localStorage.getItem('mf_mods')) || [],
+        seeds: JSON.parse(localStorage.getItem('mf_seeds')) || []
+    };
+
+    let isAdmin = false;
+    let selectedCatalogId = null;
+
+    // CLOUDINARY CONFIG
+    const CLOUD_NAME = "undpbby1";
+    const UPLOAD_PRESET = "MinEFarm Sohbeti";
+
+    // INIT
+    window.onload = function() {
+        drawPixelMLogo();
+        initCanvas();
+        renderAll();
+    };
+
+    function saveState() {
+        localStorage.setItem('mf_catalogs', JSON.stringify(state.catalogs));
+        localStorage.setItem('mf_farmPosts', JSON.stringify(state.farmPosts));
+        localStorage.setItem('mf_codes', JSON.stringify(state.codes));
+        localStorage.setItem('mf_maps', JSON.stringify(state.maps));
+        localStorage.setItem('mf_mods', JSON.stringify(state.mods));
+        localStorage.setItem('mf_seeds', JSON.stringify(state.seeds));
+    }
+
+    // DRAW PIXEL "M" LOGO
+    function drawPixelMLogo() {
+        const canvas = document.getElementById('logoCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,16,16);
+
+        // Dark Border/Background Frame
+        ctx.fillStyle = "#1a4700";
+        ctx.fillRect(0,0,16,16);
+        ctx.fillStyle = "#52a818";
+        ctx.fillRect(1,1,14,14);
+
+        // Pixel 'M' Shape (Turquoise / Cyan Emerald style)
+        ctx.fillStyle = "#55ffff";
         
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // Left Column
+        ctx.fillRect(3,3,2,10);
+        // Right Column
+        ctx.fillRect(11,3,2,10);
+        // Middle V Shape
+        ctx.fillRect(5,5,2,2);
+        ctx.fillRect(7,7,2,2);
+        ctx.fillRect(9,5,2,2);
 
-        // ----------------------------------------------------
-        // UYGULAMA DEĞİŞKENLERİ VE 36 RENK PALETİ
-        // ----------------------------------------------------
-        let currentUser = "Steve";
-        let activeFarmCategoryId = null;
-        let currentColor = "#000000";
+        // Highlights on M
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(3,3,1,3);
+        ctx.fillRect(11,3,1,3);
+    }
 
-        // Tam 36 Renk Paleti
-        const paletteColors = [
-            "#000000", "#1d1d21", "#3a3a3d", "#7f7f7f", "#b4b4b4", "#ffffff",
-            "#5b1919", "#8b0000", "#ff0000", "#ff7f7f", "#ffb3b3", "#ffcccc",
-            "#b84400", "#e65c00", "#ffa500", "#ffcc00", "#ffff00", "#ffff7f",
-            "#003300", "#006600", "#00aa00", "#55ff55", "#a3ffa3", "#d2ffd2",
-            "#003333", "#006666", "#00ffff", "#7fff7f", "#7fffd4", "#e0ffff",
-            "#000066", "#0000aa", "#0000ff", "#7f7fff", "#b8b8ff", "#e8e8ff"
+    // ADMIN ROLE CHECK
+    function checkAdminRole() {
+        const code = document.getElementById('accessCodeInput').value.trim();
+        const badge = document.getElementById('adminBadge');
+        const adminCatalogForm = document.getElementById('adminCatalogForm');
+
+        if(code === "Admin552PandaY1T34") {
+            isAdmin = true;
+            badge.style.display = "block";
+            adminCatalogForm.style.display = "block";
+        } else {
+            isAdmin = false;
+            badge.style.display = "none";
+            adminCatalogForm.style.display = "none";
+        }
+        renderAll();
+    }
+
+    // TAB SWITCHING
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+        event.target.classList.add('active');
+        document.getElementById(`panel-${tabName}`).classList.add('active');
+    }
+
+    // AUTOMATIC CLOUDINARY UPLOAD
+    async function autoUploadCloudinary(input, targetHiddenId, statusId) {
+        const statusEl = document.getElementById(statusId);
+        if(!input.files || input.files.length === 0) return;
+
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", UPLOAD_PRESET);
+
+        statusEl.innerText = "Cloudinary'ye otomatik yükleniyor...";
+
+        try {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+
+            if(data.secure_url) {
+                document.getElementById(targetHiddenId).value = data.secure_url;
+                statusEl.innerText = "✓ Yükleme Başarılı!";
+                statusEl.style.color = "var(--mc-light-green)";
+            } else {
+                statusEl.innerText = "Yükleme Başarısız!";
+                statusEl.style.color = "var(--mc-red)";
+            }
+        } catch(e) {
+            statusEl.innerText = "Hata oluştu!";
+            statusEl.style.color = "var(--mc-red)";
+        }
+    }
+
+    // 16x16 CANVAS EDITOR
+    let currentColor = "#000000";
+    let isDrawing = false;
+    const canvas = document.getElementById('pixelCanvas');
+    const ctx = canvas.getContext('2d');
+    const pixelData = Array(16).fill(null).map(() => Array(16).fill('#ffffff'));
+
+    function initCanvas() {
+        const paletteEl = document.getElementById('colorPalette');
+        paletteEl.innerHTML = '';
+        const colors = [
+            "#000000","#ffffff","#7f7f7f","#c3c3c8","#b97a57","#ffaec9","#ed1c24","#ff7f27",
+            "#fff200","#22b14c","#00a2e8","#3f48cc","#a349a4","#000000","#1a4700","#388700",
+            "#52a818","#573d26","#55ffff","#ff5555","#ffaa00","#aa00aa","#00aaaa","#aaaaaa",
+            "#555555","#5555ff","#55ff55","#ffff55","#ff55ff","#331100","#663300","#996633",
+            "#cc9966","#ffffcc","#ccffff","#ffccff","#99cc00","#00cc99","#9900cc","#cc0099",
+            "#660000","#006600","#000066","#666600","#660066","#006666","#333333","#999999",
+            "#e6e6e6","#111111","#222222","#444444","#664422","#885533","#aa6644","#cc7755",
+            "#ee8866","#ff9977","#003300","#004411","#006622","#008833","#00aa44","#00cc55",
+            "#00ff66","#33ff88","#66ffaa","#99ffcc","#001133","#002266","#003399","#0044cc"
         ];
 
-        const paletteContainer = document.getElementById('color-palette-box');
-        paletteColors.forEach(hex => {
+        colors.forEach((c, i) => {
             const box = document.createElement('div');
-            box.className = 'color-box';
-            box.style.backgroundColor = hex;
-            box.title = hex;
-            box.addEventListener('click', () => {
-                currentColor = hex;
-            });
-            paletteContainer.appendChild(box);
+            box.className = 'color-box' + (i === 0 ? ' selected' : '');
+            box.style.backgroundColor = c;
+            box.onclick = () => {
+                document.querySelectorAll('.color-box').forEach(b => b.classList.remove('selected'));
+                box.classList.add('selected');
+                currentColor = c;
+            };
+            paletteEl.appendChild(box);
         });
 
-        document.getElementById('username-input').addEventListener('input', (e) => {
-            currentUser = e.target.value.trim() || "Anonim";
-            checkAdminStatus();
-        });
+        drawGrid();
 
-        function checkAdminStatus() {
-            const adminPanel = document.getElementById('admin-farm-panel');
-            if (currentUser.startsWith("MinEFarm:")) {
-                adminPanel.style.display = "block";
-            } else {
-                adminPanel.style.display = "none";
+        canvas.onmousedown = (e) => { isDrawing = true; drawPixel(e); };
+        canvas.onmousemove = (e) => { if(isDrawing) drawPixel(e); };
+        canvas.onmouseup = () => isDrawing = false;
+        canvas.onmouseleave = () => isDrawing = false;
+    }
+
+    function drawGrid() {
+        ctx.clearRect(0,0,256,256);
+        for(let r=0; r<16; r++) {
+            for(let c=0; c<16; c++) {
+                ctx.fillStyle = pixelData[r][c];
+                ctx.fillRect(c*16, r*16, 16, 16);
+                ctx.strokeStyle = "#eee";
+                ctx.strokeRect(c*16, r*16, 16, 16);
             }
         }
+    }
 
-        // 16x16 Piksel Çizim Tuvali
-        const pixelCanvas = document.getElementById('pixel-canvas');
-        for (let i = 0; i < 256; i++) {
-            const pixel = document.createElement('div');
-            pixel.className = 'pixel';
-            pixel.addEventListener('click', () => {
-                pixel.style.backgroundColor = currentColor;
-            });
-            pixelCanvas.appendChild(pixel);
+    function drawPixel(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / 16);
+        const y = Math.floor((e.clientY - rect.top) / 16);
+        if(x>=0 && x<16 && y>=0 && y<16) {
+            pixelData[y][x] = currentColor;
+            drawGrid();
         }
+    }
 
-        function getCanvasDataURL() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 16;
-            canvas.height = 16;
-            const ctx = canvas.getContext('2d');
-            const pixels = pixelCanvas.children;
-            
-            for (let i = 0; i < 256; i++) {
-                const row = Math.floor(i / 16);
-                const col = i % 16;
-                ctx.fillStyle = pixels[i].style.backgroundColor || '#ffffff';
-                ctx.fillRect(col, row, 1, 1);
-            }
-            return canvas.toDataURL();
-        }
+    function setEraser() { currentColor = "#ffffff"; }
+    function clearCanvas() {
+        for(let r=0; r<16; r++) pixelData[r].fill("#ffffff");
+        drawGrid();
+    }
 
-        // ImgBB Otomatik Görsel Yükleyici
-        async function uploadImageFile(fileInput) {
-            const file = fileInput.files[0];
-            if (!file) return "";
-            const formData = new FormData();
-            formData.append('image', file);
-            
-            try {
-                const res = await fetch('https://api.imgbb.com/1/upload?key=6d700732615458a2e9ae70068593416b', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                return data.data ? data.data.url : "";
-            } catch (err) {
-                console.error("Resim yükleme hatası:", err);
-                return "";
+    function getCanvasBase64() {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 16;
+        tempCanvas.height = 16;
+        const tCtx = tempCanvas.getContext('2d');
+        for(let r=0; r<16; r++) {
+            for(let c=0; c<16; c++) {
+                tCtx.fillStyle = pixelData[r][c];
+                tCtx.fillRect(c, r, 1, 1);
             }
         }
+        return tempCanvas.toDataURL();
+    }
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`sec-${tabName}`).classList.add('active');
-            event.target.classList.add('active');
-        }
+    // FARM CATALOG & POSTS
+    function saveFarmCatalog() {
+        if(!isAdmin) return alert("Sadece yöneticiler katalog ekleyebilir!");
+        const title = document.getElementById('catalogTitle').value.trim();
+        const desc = document.getElementById('catalogDesc').value.trim();
+        if(!title) return alert("Katalog başlığı giriniz!");
 
-        // ----------------------------------------------------
-        // FARMLAR BÖLÜMÜ
-        // ----------------------------------------------------
-        function saveFarmCategory() {
-            const title = document.getElementById('farm-cat-title').value;
-            const desc = document.getElementById('farm-cat-desc').value;
-            const iconUrl = getCanvasDataURL();
+        const newCatalog = {
+            id: Date.now(),
+            title: title,
+            desc: desc,
+            icon: getCanvasBase64(),
+            author: document.getElementById('usernameInput').value || 'Yönetici'
+        };
 
-            if(!title) return alert("Farm başlığı zorunludur!");
+        state.catalogs.push(newCatalog);
+        saveState();
+        document.getElementById('catalogTitle').value = '';
+        document.getElementById('catalogDesc').value = '';
+        clearCanvas();
+        renderCatalogs();
+    }
 
-            db.ref('farmCategories').push({
-                title: title,
-                desc: desc,
-                icon: iconUrl,
-                author: currentUser
-            });
+    function openCatalog(id) {
+        selectedCatalogId = id;
+        const cat = state.catalogs.find(c => c.id === id);
+        if(!cat) return;
 
-            document.getElementById('farm-cat-title').value = "";
-            document.getElementById('farm-cat-desc').value = "";
-            alert("Farm Kategorisi Başarıyla Eklendi!");
-        }
+        document.getElementById('farmCatalogList').style.display = "none";
+        document.getElementById('adminCatalogForm').style.display = "none";
+        document.getElementById('catalogPostSection').style.display = "block";
+        document.getElementById('selectedCatalogTitle').innerText = cat.title;
+        document.getElementById('selectedCatalogDesc').innerText = cat.desc;
 
-        db.ref('farmCategories').on('value', snapshot => {
-            const list = document.getElementById('farm-categories-list');
-            list.innerHTML = "";
-            snapshot.forEach(child => {
-                const item = child.val();
-                const id = child.key;
-                list.innerHTML += `
-                    <div class="card" onclick="openFarmPosts('${id}', '${item.title}')" style="cursor:pointer;">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <img src="${item.icon}" style="width:48px; height:48px; image-rendering:pixelated; border:2px solid #000;">
-                            <div>
-                                <div class="card-title">${item.title}</div>
-                                <div style="font-size:8px; color:#ddd;">${item.desc}</div>
-                                <div class="card-author">Ekleyen: ${item.author}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
+        renderFarmPosts();
+    }
+
+    function closeCatalogView() {
+        selectedCatalogId = null;
+        document.getElementById('farmCatalogList').style.display = "grid";
+        if(isAdmin) document.getElementById('adminCatalogForm').style.display = "block";
+        document.getElementById('catalogPostSection').style.display = "none";
+    }
+
+    function addFarmPost() {
+        const version = document.getElementById('farmPostVersion').value.trim();
+        const desc = document.getElementById('farmPostDesc').value.trim();
+        const yt = document.getElementById('farmPostYoutube').value.trim();
+        const img = document.getElementById('farmPostImgUrl').value;
+
+        if(!version || !desc) return alert("Sürüm ve açıklama zorunludur!");
+
+        const newPost = {
+            id: Date.now(),
+            catalogId: selectedCatalogId,
+            version: version,
+            desc: desc,
+            youtube: yt,
+            img: img,
+            author: document.getElementById('usernameInput').value || 'Oyuncu'
+        };
+
+        state.farmPosts.push(newPost);
+        saveState();
+        document.getElementById('farmPostVersion').value = '';
+        document.getElementById('farmPostDesc').value = '';
+        document.getElementById('farmPostYoutube').value = '';
+        document.getElementById('farmPostImgUrl').value = '';
+        document.getElementById('farmUploadStatus').innerText = 'Görsel Seçildiğinde Otomatik Cloudinary\'ye Yüklenir';
+        renderFarmPosts();
+    }
+
+    // OTHER CONTENT ADD FUNCTIONS
+    function addCode() {
+        const title = document.getElementById('codeTitle').value.trim();
+        const command = document.getElementById('codeCommand').value.trim();
+        const desc = document.getElementById('codeDesc').value.trim();
+
+        if(!title || !command || !desc) return alert("Tüm alanları doldurunuz!");
+        if(!command.startsWith('/')) return alert("Komut mutlaka '/' işareti ile başlamalıdır!");
+
+        state.codes.push({
+            id: Date.now(),
+            title: title,
+            command: command,
+            desc: desc,
+            author: document.getElementById('usernameInput').value || 'Oyuncu'
         });
+        saveState();
+        document.getElementById('codeTitle').value = '';
+        document.getElementById('codeCommand').value = '';
+        document.getElementById('codeDesc').value = '';
+        renderCodes();
+    }
 
-        function openFarmPosts(catId, catTitle) {
-            activeFarmCategoryId = catId;
-            document.getElementById('farm-categories-list').style.display = 'none';
-            document.getElementById('farm-posts-container').style.display = 'block';
-            document.getElementById('current-farm-title').innerText = catTitle;
-            loadFarmPosts(catId);
-        }
+    function addMap() {
+        const title = document.getElementById('mapTitle').value.trim();
+        const url = document.getElementById('mapUrl').value.trim();
+        const version = document.getElementById('mapVersion').value.trim();
+        const img = document.getElementById('mapImgUrl').value;
 
-        function closeFarmPosts() {
-            document.getElementById('farm-categories-list').style.display = 'flex';
-            document.getElementById('farm-posts-container').style.display = 'none';
-        }
+        if(!title || !url || !version) return alert("Başlık, URL ve Sürüm zorunludur!");
 
-        function toggleFarmPostForm() {
-            const form = document.getElementById('farm-post-form');
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        }
-
-        async function submitFarmPost() {
-            const version = document.getElementById('post-version').value;
-            const desc = document.getElementById('post-desc').value;
-            const fileInput = document.getElementById('post-file');
-            const ytUrl = document.getElementById('post-yt-url').value;
-
-            const imgUrl = await uploadImageFile(fileInput);
-
-            db.ref(`farmPosts/${activeFarmCategoryId}`).push({
-                version: version,
-                desc: desc,
-                imageUrl: imgUrl,
-                ytUrl: ytUrl,
-                author: currentUser
-            });
-
-            document.getElementById('post-version').value = "";
-            document.getElementById('post-desc').value = "";
-            document.getElementById('post-yt-url').value = "";
-            document.getElementById('farm-post-form').style.display = 'none';
-        }
-
-        function loadFarmPosts(catId) {
-            db.ref(`farmPosts/${catId}`).on('value', snapshot => {
-                const list = document.getElementById('farm-posts-list');
-                list.innerHTML = "";
-                snapshot.forEach(child => {
-                    const item = child.val();
-                    let mediaHtml = "";
-                    if (item.imageUrl) mediaHtml += `<img src="${item.imageUrl}" class="card-img">`;
-                    if (item.ytUrl) {
-                        const ytId = item.ytUrl.split('v=')[1] || item.ytUrl.split('/').pop();
-                        mediaHtml += `<iframe style="width:100%; height:200px; margin-top:8px; border:none;" src="https://www.youtube.com/embed/${ytId}"></iframe>`;
-                    }
-
-                    list.innerHTML += `
-                        <div class="card">
-                            <div style="font-size:10px; color:var(--accent-yellow);">Sürüm: ${item.version}</div>
-                            <div style="font-size:9px; margin-top:5px; line-height:1.4;">${item.desc}</div>
-                            ${mediaHtml}
-                            <div class="card-author">Paylaşan: ${item.author}</div>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        // ----------------------------------------------------
-        // KODLAR BÖLÜMÜ
-        // ----------------------------------------------------
-        function submitCode() {
-            const title = document.getElementById('code-title').value;
-            const command = document.getElementById('code-command').value;
-            const desc = document.getElementById('code-desc').value;
-
-            if (!command.startsWith('/')) {
-                return alert("Komut mutlaka '/' işareti ile başlamalıdır!");
-            }
-
-            db.ref('codes').push({
-                title: title,
-                command: command,
-                desc: desc,
-                author: currentUser
-            });
-
-            document.getElementById('code-title').value = "";
-            document.getElementById('code-command').value = "";
-            document.getElementById('code-desc').value = "";
-        }
-
-        let allCodes = [];
-        db.ref('codes').on('value', snapshot => {
-            allCodes = [];
-            snapshot.forEach(child => {
-                allCodes.push(child.val());
-            });
-            renderCodes(allCodes);
+        state.maps.push({
+            id: Date.now(),
+            title: title,
+            url: url,
+            version: version,
+            img: img,
+            author: document.getElementById('usernameInput').value || 'Oyuncu'
         });
+        saveState();
+        document.getElementById('mapTitle').value = '';
+        document.getElementById('mapUrl').value = '';
+        document.getElementById('mapVersion').value = '';
+        document.getElementById('mapImgUrl').value = '';
+        renderMaps();
+    }
 
-        function renderCodes(codes) {
-            const list = document.getElementById('codes-list');
-            list.innerHTML = "";
-            codes.forEach(item => {
-                list.innerHTML += `
-                    <div class="card">
-                        <div class="card-title">${item.title}</div>
-                        <div class="code-block">${item.command}</div>
-                        <div style="font-size:8px; margin-top:5px;">${item.desc}</div>
-                        <div class="card-author">Paylaşan: ${item.author}</div>
-                    </div>
-                `;
-            });
-        }
+    function addMod() {
+        const title = document.getElementById('modTitle').value.trim();
+        const url = document.getElementById('modUrl').value.trim();
+        const version = document.getElementById('modVersion').value.trim();
+        const img = document.getElementById('modImgUrl').value;
 
-        function filterCodes() {
-            const query = document.getElementById('code-search-input').value.toLowerCase();
-            const filtered = allCodes.filter(c => 
-                c.title.toLowerCase().includes(query) || 
-                c.command.toLowerCase().includes(query) || 
-                c.desc.toLowerCase().includes(query)
-            );
-            renderCodes(filtered);
-        }
+        if(!title || !url || !version) return alert("Başlık, URL ve Sürüm zorunludur!");
 
-        // ----------------------------------------------------
-        // HARİTALAR BÖLÜMÜ
-        // ----------------------------------------------------
-        async function submitMap() {
-            const title = document.getElementById('map-title').value;
-            const url = document.getElementById('map-url').value;
-            const version = document.getElementById('map-version').value;
-            const fileInput = document.getElementById('map-file');
-
-            const imgUrl = await uploadImageFile(fileInput);
-
-            db.ref('maps').push({
-                title: title,
-                siteUrl: url,
-                version: version,
-                imageUrl: imgUrl,
-                author: currentUser
-            });
-            alert("Harita paylaşıldı!");
-        }
-
-        db.ref('maps').on('value', snapshot => {
-            const list = document.getElementById('maps-list');
-            list.innerHTML = "";
-            snapshot.forEach(child => {
-                const item = child.val();
-                list.innerHTML += `
-                    <div class="card">
-                        <div class="card-title">${item.title} [${item.version}]</div>
-                        <a href="${item.siteUrl}" target="_blank" style="color:#81c784; font-size:8px;">Haritayı İndir / Bağlantıya Git</a>
-                        ${item.imageUrl ? `<img src="${item.imageUrl}" class="card-img">` : ''}
-                        <div class="card-author">Paylaşan: ${item.author}</div>
-                    </div>
-                `;
-            });
+        state.mods.push({
+            id: Date.now(),
+            title: title,
+            url: url,
+            version: version,
+            img: img,
+            author: document.getElementById('usernameInput').value || 'Oyuncu'
         });
+        saveState();
+        document.getElementById('modTitle').value = '';
+        document.getElementById('modUrl').value = '';
+        document.getElementById('modVersion').value = '';
+        document.getElementById('modImgUrl').value = '';
+        renderMods();
+    }
 
-        // ----------------------------------------------------
-        // MODLAR BÖLÜMÜ
-        // ----------------------------------------------------
-        async function submitMod() {
-            const title = document.getElementById('mod-title').value;
-            const url = document.getElementById('mod-url').value;
-            const version = document.getElementById('mod-version').value;
-            const fileInput = document.getElementById('mod-file');
+    function addSeed() {
+        const title = document.getElementById('seedTitle').value.trim();
+        const version = document.getElementById('seedVersion').value.trim();
+        const code = document.getElementById('seedCode').value.trim();
+        const img = document.getElementById('seedImgUrl').value;
 
-            const imgUrl = await uploadImageFile(fileInput);
+        if(!title || !version || !code) return alert("Tüm alanları doldurunuz!");
 
-            db.ref('mods').push({
-                title: title,
-                siteUrl: url,
-                version: version,
-                imageUrl: imgUrl,
-                author: currentUser
-            });
-            alert("Mod paylaşıldı!");
-        }
-
-        db.ref('mods').on('value', snapshot => {
-            const list = document.getElementById('mods-list');
-            list.innerHTML = "";
-            snapshot.forEach(child => {
-                const item = child.val();
-                list.innerHTML += `
-                    <div class="card">
-                        <div class="card-title">${item.title} [${item.version}]</div>
-                        <a href="${item.siteUrl}" target="_blank" style="color:#81c784; font-size:8px;">Modu İndir / Bağlantıya Git</a>
-                        ${item.imageUrl ? `<img src="${item.imageUrl}" class="card-img">` : ''}
-                        <div class="card-author">Paylaşan: ${item.author}</div>
-                    </div>
-                `;
-            });
+        state.seeds.push({
+            id: Date.now(),
+            title: title,
+            version: version,
+            code: code,
+            img: img,
+            author: document.getElementById('usernameInput').value || 'Oyuncu'
         });
+        saveState();
+        document.getElementById('seedTitle').value = '';
+        document.getElementById('seedVersion').value = '';
+        document.getElementById('seedCode').value = '';
+        document.getElementById('seedImgUrl').value = '';
+        renderSeeds();
+    }
 
-        // ----------------------------------------------------
-        // SEEDLER BÖLÜMÜ
-        // ----------------------------------------------------
-        async function submitSeed() {
-            const title = document.getElementById('seed-title').value;
-            const version = document.getElementById('seed-version').value;
-            const seedCode = document.getElementById('seed-code').value;
-            const fileInput = document.getElementById('seed-file');
+    // DELETE ITEM (Admin Only)
+    function deleteItem(type, id) {
+        if(!isAdmin) return;
+        if(!confirm("Bu içeriği kalıcı olarak silmek istediğinize emin misiniz?")) return;
 
-            const imgUrl = await uploadImageFile(fileInput);
+        state[type] = state[type].filter(item => item.id !== id);
+        saveState();
+        renderAll();
+    }
 
-            db.ref('seeds').push({
-                title: title,
-                version: version,
-                seedCode: seedCode,
-                imageUrl: imgUrl,
-                author: currentUser
-            });
-            alert("Seed paylaşıldı!");
-        }
+    // RENDERING FUNCTIONS
+    function renderAll() {
+        renderCatalogs();
+        renderCodes();
+        renderMaps();
+        renderMods();
+        renderSeeds();
+    }
 
-        db.ref('seeds').on('value', snapshot => {
-            const list = document.getElementById('seeds-list');
-            list.innerHTML = "";
-            snapshot.forEach(child => {
-                const item = child.val();
-                list.innerHTML += `
-                    <div class="card">
-                        <div class="card-title">${item.title}</div>
-                        <div style="font-size:9px; color:var(--accent-yellow); margin-top:4px;">SEED: ${item.seedCode} (Sürüm: ${item.version})</div>
-                        ${item.imageUrl ? `<img src="${item.imageUrl}" class="card-img">` : ''}
-                        <div class="card-author">Paylaşan: ${item.author}</div>
-                    </div>
-                `;
-            });
+    function renderCatalogs() {
+        const list = document.getElementById('farmCatalogList');
+        list.innerHTML = '';
+        state.catalogs.forEach(cat => {
+            const el = document.createElement('div');
+            el.className = 'catalog-item';
+            el.innerHTML = `
+                <img src="${cat.icon}">
+                <div style="font-size: 9px; margin-top: 5px; color: var(--mc-gold);">${cat.title}</div>
+                <div style="font-size: 6px; color: #888;">Ekleyen: ${cat.author}</div>
+                ${isAdmin ? `<button class="btn btn-danger" style="margin-top:5px; font-size:6px;" onclick="event.stopPropagation(); deleteItem('catalogs', ${cat.id})">🗑️ Sil</button>` : ''}
+            `;
+            el.onclick = () => openCatalog(cat.id);
+            list.appendChild(el);
         });
+    }
 
-        checkAdminStatus();
-    </script>
+    function renderFarmPosts() {
+        const list = document.getElementById('farmPostList');
+        list.innerHTML = '';
+        const posts = state.farmPosts.filter(p => p.catalogId === selectedCatalogId);
+
+        posts.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('farmPosts', ${p.id})">🗑️ Sil</button>` : ''}
+                <div class="card-header">
+                    <span class="card-title">Sürüm: ${p.version}</span>
+                    <span class="card-author">Gönderen: ${p.author}</span>
+                </div>
+                <div>${p.desc}</div>
+                ${p.img ? `<img src="${p.img}" class="card-img">` : ''}
+                ${p.youtube ? `<div style="margin-top:5px;"><a href="${p.youtube}" target="_blank" style="color:var(--mc-accent);">[YouTube Anlatımını İzle]</a></div>` : ''}
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function renderCodes() {
+        const list = document.getElementById('codeList');
+        const query = document.getElementById('codeSearchInput').value.toLowerCase();
+        list.innerHTML = '';
+
+        state.codes.filter(c => c.title.toLowerCase().includes(query) || c.command.toLowerCase().includes(query)).forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('codes', ${c.id})">🗑️ Sil</button>` : ''}
+                <div class="card-header">
+                    <span class="card-title">${c.title}</span>
+                    <span class="card-author">Gönderen: ${c.author}</span>
+                </div>
+                <div style="background:#000; padding:5px; color:var(--mc-accent); border:1px solid #333; margin: 5px 0;">${c.command}</div>
+                <div>${c.desc}</div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function renderMaps() {
+        const list = document.getElementById('mapList');
+        list.innerHTML = '';
+        state.maps.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('maps', ${m.id})">🗑️ Sil</button>` : ''}
+                <div class="card-header">
+                    <span class="card-title">${m.title} (v${m.version})</span>
+                    <span class="card-author">Gönderen: ${m.author}</span>
+                </div>
+                <div><a href="${m.url}" target="_blank" style="color:var(--mc-accent);">[Haritayı İndir / Web Sitesi]</a></div>
+                ${m.img ? `<img src="${m.img}" class="card-img">` : ''}
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function renderMods() {
+        const list = document.getElementById('modList');
+        list.innerHTML = '';
+        state.mods.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('mods', ${m.id})">🗑️ Sil</button>` : ''}
+                <div class="card-header">
+                    <span class="card-title">${m.title} (v${m.version})</span>
+                    <span class="card-author">Gönderen: ${m.author}</span>
+                </div>
+                <div><a href="${m.url}" target="_blank" style="color:var(--mc-accent);">[Modu İndir / Web Sitesi]</a></div>
+                ${m.img ? `<img src="${m.img}" class="card-img">` : ''}
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function renderSeeds() {
+        const list = document.getElementById('seedList');
+        list.innerHTML = '';
+        state.seeds.forEach(s => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                ${isAdmin ? `<button class="card-delete" onclick="deleteItem('seeds', ${s.id})">🗑️ Sil</button>` : ''}
+                <div class="card-header">
+                    <span class="card-title">${s.title} (v${s.version})</span>
+                    <span class="card-author">Gönderen: ${s.author}</span>
+                </div>
+                <div style="background:#000; padding:5px; color:var(--mc-gold); border:1px solid #333; margin: 5px 0;">Seed: ${s.code}</div>
+                ${s.img ? `<img src="${s.img}" class="card-img">` : ''}
+            `;
+            list.appendChild(card);
+        });
+    }
+</script>
+
 </body>
 </html>
